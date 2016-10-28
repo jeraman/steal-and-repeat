@@ -34,8 +34,10 @@ class Loop
         void set_head_normalized (float);             //sets the loop head position (between 0 and 1)
         void set_head_absolute (int);                 ///using the size of the sample
         void set_looping_area(int, int);              //sets the looping area between int and int
+        void set_looping_area_with_volume(int, int, float, float); //sets the looping area between the two former ints. volume is a interpolation between the two last ints.
         void set_full_looping_area();                 //sets the sample to fully loop (from beg to end)
-        void set_aux_looping_area(int, int);
+        void set_aux_looping_area(int, int);          //sets the aux looping area between int and int
+        void set_aux_looping_area_with_volume(int, int, float, float); //sets the aux looping area between the two former ints. volume is a interpolation between the two last ints.
         void remove_aux_looping_area();
     
         ofPoint get_looping_area();                   //sets the looping area between int and int
@@ -47,10 +49,12 @@ class Loop
     
         bool is_recording ();                      //returns if it's recording or not
         bool is_empty ();                          //if this loop is clear/empty or not
-        bool there_is_looping_area();               //verifies if the looping area is currently working
+        bool there_is_looping_area();              //verifies if the looping area is currently working
         bool there_is_aux_looping_area();          //verifies if the aux looping area is currently working
         int  get_size ();                          //gets the size of this loop
-        void update_head_position();
+        void update_head_position();               //updates the head position
+        float interpolate_volume(int);             //function that interpolates the volume depending on volume_start, volume_end, based on a certain index (int)
+        float interpolate_aux_volume(int);         //same thing, but for the aux
     
         bool muted;          //to mute the loop
         bool overdubbing;    //indicates if this loop is currently overdubbing or not
@@ -62,6 +66,8 @@ class Loop
         int start_index;     //index where the looping starts
         int end_index;       //index where the loop ends
         float volume;        //stores the current volume
+        float volume_start,     volume_end;     //stores the current volume for the start and the end
+        float aux_volume_start, aux_volume_end; //stores the current volume for the start and the end for the aux
     
         int aux_outpos;      //[AUX] a agulha do vinil (para este loop)
         int aux_start_index; //[AUX] index where the looping starts

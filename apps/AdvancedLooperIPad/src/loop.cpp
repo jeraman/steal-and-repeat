@@ -44,6 +44,8 @@ void Loop::setup() {
     volume = 1.f;
     leftpan = 1.f;
     rightpan = 1.f;
+    volume_start = volume;
+    volume_end = volume;
     
     //init aux_looping area
     aux_start_index = -1;
@@ -107,6 +109,29 @@ void Loop::update_head_position() {
     
 }
 
+
+float Loop::interpolate_volume(int buf_index) {
+    //computing the normalized head pos
+    float normalized_pos = (buf_index-start_index)/(float)(end_index-start_index);
+    
+    //computing the current scale
+    float current_volume = volume_start*(1-normalized_pos) + volume_end*(normalized_pos);
+    
+    //normalizing
+    return (current_volume*2);
+}
+
+float Loop::interpolate_aux_volume(int buf_index) {
+    //computing the normalized head pos
+    float normalized_pos = (buf_index-aux_start_index)/(float)(aux_end_index-aux_start_index);
+    
+    //computing the current scale
+    float current_volume = aux_volume_start*(1-normalized_pos) + aux_volume_end*(normalized_pos);
+    
+    //normalizing
+    return (current_volume*2);
+}
+
 void Loop::play(float* &output)
 {
     if ((!is_empty()) & playing)
@@ -121,19 +146,24 @@ void Loop::play(float* &output)
             }
             
             //computing the index
-            int   index = i*nChannels;
+            int index            = i*nChannels;
             
             //computing the index in the output_buf
-            int   output_buf_index = (outpos + index)%output_buf.size();
+            int output_buf_index = (outpos + index)%output_buf.size();
             
             //updates left channel - main
             //output[index  ] = ofRandom(-0.5, 0.5);
-            output[index  ] = output_buf[output_buf_index] * volume * leftpan;
+            
+            float current_volume = interpolate_volume(output_buf_index);
+            
+            //feeds the output
+            output[index  ]      = output_buf[output_buf_index] * current_volume * leftpan;
             
             //in this case, we are getting the value from the right, and feeding the left channel
             //because we are using only the left channel of the focus right
             if (nChannels==2)
-                output[index+1] += output_buf[output_buf_index] * volume * rightpan;
+                //output[index+1] += output_buf[output_buf_index] * volume * rightpan;
+                output[index+1] += output_buf[output_buf_index] * current_volume * rightpan;
             
             //in case there are more channels (eg. x channels), remember to update output[index+x]. so far, this code will only work with n channels.
             
@@ -141,27 +171,39 @@ void Loop::play(float* &output)
             //[AUX] computing the index in the output_buf
             int   aux_output_buf_index = (aux_outpos + index)%output_buf.size();
             
+            float current_aux_volume = interpolate_aux_volume(aux_output_buf_index);
+            
             //if there is currentyl an aux looping area
             if (there_is_aux_looping_area()) {
                 
                 //same as before
-                output[index  ] += output_buf[aux_output_buf_index] * aux_volume * leftpan;
+                output[index  ] += output_buf[aux_output_buf_index] * current_aux_volume * leftpan;
                 
                 if (nChannels==2)
-                    output[index+1] += output_buf[aux_output_buf_index] * aux_volume * rightpan;
+                    output[index+1] += output_buf[aux_output_buf_index] * current_aux_volume * rightpan;
             }
-            
-            //updates output buf if overdubing and got to an end
-            if (overdubbing && (output_buf_index==0||aux_output_buf_index==0))
-                update_output_buffer();
-             
             
         }
         
         update_head_position();
         
+        //updates output buf if overdubing and got to an end
+        if (overdubbing)
+            update_output_buffer();
+        
+    } else { //if it not playing neither there is anything stored to play
+
+        for(int i=0; i<bufferSize; i++) {
+            //computing the index
+            int   index = i*nChannels;
+            
+            //making it mute
+            output[index  ] = 0;
+        }
     }
     
+    //if (!playing)
+    //cout << "is playing?" << playing <<endl;
     
 }
 
@@ -221,8 +263,7 @@ void Loop::audio_input(float * &input)
 //////////////////////////////////
 void Loop::audio_output(float * &output)
 {
-    if (playing)
-        this->play(output);    //toca o loop principal
+    this->play(output);    //toca o loop principal
 }
 
 
@@ -357,6 +398,20 @@ void Loop::set_looping_area(int start, int end)
     
     start_index = start;
     end_index   = end;
+    
+    volume_start = volume;
+    volume_end   = volume;
+}
+
+//////////////////////////////////
+// sets the sample to loop in a second area between start and end
+//////////////////////////////////
+void Loop::set_looping_area_with_volume(int start, int end, float start_volume, float end_volume)
+{
+    set_looping_area(start, end);
+    
+    volume_start = start_volume;
+    volume_end   = end_volume;
 }
 
 
@@ -377,8 +432,22 @@ void Loop::set_aux_looping_area(int start, int end)
     aux_start_index = start;
     aux_end_index   = end;
     
+    aux_volume_start = aux_volume;
+    aux_volume_end   = aux_volume;
+    
     //the the aux head
     //aux_outpos = start;
+}
+
+//////////////////////////////////
+// sets the sample to loop in a second area between start and end
+//////////////////////////////////
+void Loop::set_aux_looping_area_with_volume(int start, int end, float start_volume, float end_volume)
+{
+    set_aux_looping_area(start, end);
+    
+    aux_volume_start = start_volume;
+    aux_volume_end   = end_volume;
 }
 
 //////////////////////////////////

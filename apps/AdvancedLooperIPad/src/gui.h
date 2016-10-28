@@ -36,18 +36,21 @@ public:
     void update_mic_buffer(float *, int, int);
     void set_debug(bool);                                 //debug control
     void set_scale(float);
-    void set_window(int, int);
-    void set_aux_window(int, int);
+    void set_window_with_scale(int, int, int, int);
+    void set_aux_window_with_scale(int, int, int, int);
     void remove_aux_window();
     void remove_window();
+    bool there_is_an_window();
     
 private:
     bool debug;
     bool there_is_an_aux_window;
     //int head_offset;
-    float scale;
-    int window1_start, window1_end;
-    int window2_start, window2_end;
+    float scale_whole_loop;
+    float scale_window1_start, scale_window1_end;
+    float scale_window2_start, scale_window2_end;
+    int   position_window1_start, position_window1_end;
+    int   position_window2_start, position_window2_end;
     
     vector <float> leftMic;  //stores the left channel of live mic
     vector <float> rightMic; //stores the right channel of live mic

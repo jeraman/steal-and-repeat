@@ -139,19 +139,19 @@ void State_Machine::update_TWO_FINGERS(bool is_first_time_state_is_accessed) {
     int newf1x = f1.x*loop.get_size();
     int newf2x = f2.x*loop.get_size();
     
-    float newy = (1-((f1.y+f2.y)/2))*2;
+    //float newy = (1-((f1.y+f2.y)/2))*2;
     
     //updates the looping area
-    loop.set_looping_area(newf1x, newf2x);
+    loop.set_looping_area_with_volume(newf1x, newf2x, 1-f1.y, 1-f2.y);
     
     //sets the window
-    gui.set_window(f1.x*ofGetWidth(), f2.x*ofGetWidth());
+    gui.set_window_with_scale(f1.x*ofGetWidth(), f2.x*ofGetWidth(), f1.y*ofGetHeight(), f2.y*ofGetHeight());
     
     //sets the volue
-    loop.set_volume(newy);
+    //loop.set_volume(newy);
     
     //sets the scale
-    gui.set_scale(newy);
+    //gui.set_scale(newy);
     
     //removes any loooping area
     loop.remove_aux_looping_area();
@@ -228,19 +228,16 @@ void State_Machine::update_THREE_FINGERS(bool is_first_time_state_is_accessed) {
     int newf1x = f1.x*loop.get_size();
     int newf2x = f2.x*loop.get_size();
     
-    float new12y = (1-((f1.y+f2.y)/2))*2;
+    //float new12y = (1-((f1.y+f2.y)/2))*2;
     
     //updates the looping area
-    loop.set_looping_area(newf1x, newf2x);
+    loop.set_looping_area_with_volume(newf1x, newf2x, 1-f1.y, 1-f2.y);
     
     //sets the window
-    gui.set_window(f1.x*ofGetWidth(), f2.x*ofGetWidth());
+    gui.set_window_with_scale(f1.x*ofGetWidth(), f2.x*ofGetWidth(), f1.y*ofGetHeight(), f2.y*ofGetHeight());
     
     //sets the volume
-    loop.set_volume(new12y);
-    
-    //sets the scale
-    gui.set_scale(new12y);
+    //loop.set_volume(new12y);
     
     
     /////////////////////
@@ -255,6 +252,9 @@ void State_Machine::update_THREE_FINGERS(bool is_first_time_state_is_accessed) {
     
     //sets the aux volume
     loop.set_aux_volume(new3y);
+    
+    //sets the scale
+    gui.set_scale(new3y);
     
     //removes aux window
     gui.remove_aux_window();
@@ -334,37 +334,39 @@ void State_Machine::update_FOUR_FINGERS(bool is_first_time_state_is_accessed) {
     int newf1x = f1.x*loop.get_size();
     int newf2x = f2.x*loop.get_size();
     
-    float newy = (1-((f1.y+f2.y)/2))*2;
+    //float newy = (1-((f1.y+f2.y)/2))*2;
     
     //updates the looping area
-    loop.set_looping_area(newf1x, newf2x);
+    //loop.set_looping_area(newf1x, newf2x);
+    loop.set_looping_area_with_volume(newf1x, newf2x, 1-f1.y, 1-f2.y);
     
     //sets the window
-    gui.set_window(f1.x*ofGetWidth(), f2.x*ofGetWidth());
+    gui.set_window_with_scale(f1.x*ofGetWidth(), f2.x*ofGetWidth(), f1.y*ofGetHeight(), f2.y*ofGetHeight());
     
     //sets the volue
-    loop.set_volume(newy);
+    //loop.set_volume(newy);
     
     //sets the scale
-    gui.set_scale(newy);
+    //gui.set_scale(newy);
     
     //computing the position in the sound
     int newf3x = f3.x*loop.get_size();
     int newf4x = f4.x*loop.get_size();
     
-    newy = (1-((f3.y+f4.y)/2))*2;
+    //float newy = (1-((f3.y+f4.y)/2))*2;
     
     //updates the looping area
-    loop.set_aux_looping_area(newf3x, newf4x);
+    //loop.set_aux_looping_area(newf3x, newf4x);
+    loop.set_aux_looping_area_with_volume(newf3x, newf4x, 1-f3.y, 1-f4.y);
     
     //sets the aux window
-    gui.set_aux_window(f3.x*ofGetWidth(), f4.x*ofGetWidth());
+    gui.set_aux_window_with_scale(f3.x*ofGetWidth(), f4.x*ofGetWidth(), f3.y*ofGetHeight(), f4.y*ofGetHeight());
     
     //sets the volue
-    loop.set_aux_volume(newy);
+    //loop.set_aux_volume(newy);
     
     //sets the scale
-    gui.set_scale(newy);
+    //gui.set_scale(newy);
     
     if (debug) {
         cout << "update_FOUR_FINGERS!"<< endl;

@@ -91,6 +91,7 @@ void Input_Interface::draw ()
 
 void Input_Interface::set_fingers (vector<Touch>& fingers)
 {
+    std::sort(fingers.begin(), fingers.end(), x_sorting);
     this->touches = &fingers;
 }
 

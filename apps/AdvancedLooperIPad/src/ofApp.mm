@@ -53,10 +53,6 @@ void ofApp::setup_sound(){
         NSLog(@"      N_CHANNELS:  %i \n", N_CHANNELS);
         NSLog(@"      SAMPLE_RATE: %i \n", SAMPLE_RATE);
         NSLog(@"      BUFFER_SIZE: %i \n", BUFFER_SIZE);
-        //cout<< "sound setup succeded? " << result << " setup: " << endl;
-        //cout<< "      N_CHANNELS:  " << N_CHANNELS << endl;
-        //cout<< "      SAMPLE_RATE: " << SAMPLE_RATE << endl;
-        //cout<< "      BUFFER_SIZE: " << BUFFER_SIZE << endl;
     }
     
 }

@@ -55,6 +55,8 @@ char Ipad_Keyboard::getKeyPressed(){
         result = actualChar;
     }
     
+    //NSLog(@"character: %d \n", (int)text.size());
+    
     lastTextFieldSize = text.size();
     
     return result;

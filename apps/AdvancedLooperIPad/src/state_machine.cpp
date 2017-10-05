@@ -73,6 +73,11 @@ void State_Machine::update(Input_Interface inter) {
     last_state = state;
 }
 
+void State_Machine::check_if_volume_has_changed_to_one_and_update_gui() {
+    if (loop.volume == 1)
+        gui.set_scale(1);
+}
+
 //--------------------------------------------------------------
 void State_Machine::update_NONE(bool is_first_time_state_is_accessed) {
     if (is_first_time_state_is_accessed) {
@@ -84,7 +89,12 @@ void State_Machine::update_NONE(bool is_first_time_state_is_accessed) {
         
         //removes any aux area
         loop.remove_aux_looping_area();
+        
+        //setting the locker (if there are fingers on the screen) to true. used for clearing the sample
+        loop.locker_screen_has_no_finger = true;
     }
+    
+    check_if_volume_has_changed_to_one_and_update_gui();
     
     //if (debug)
     //    cout << "update_NONE!" << endl;
@@ -122,6 +132,9 @@ void State_Machine::update_ONE_FINGER(bool is_first_time_state_is_accessed) {
     //removes aux window
     gui.remove_aux_window();
     
+    //setting the locker (if there are fingers on the screen) to false. used for clearing the sample
+    loop.locker_screen_has_no_finger = false;
+    
     if (debug) {
         cout << "update_ONE_FINGER!"<< endl;
         cout << "           x: " << f1.x << " y: " << f1.y << endl;
@@ -158,6 +171,9 @@ void State_Machine::update_TWO_FINGERS(bool is_first_time_state_is_accessed) {
     
     //removes aux window
     gui.remove_aux_window();
+    
+    //setting the locker (if there are fingers on the screen) to false. used for clearing the sample
+    loop.locker_screen_has_no_finger = false;
     
     //organizes each one should go first and updates the head of the gui
     
@@ -258,6 +274,9 @@ void State_Machine::update_THREE_FINGERS(bool is_first_time_state_is_accessed) {
     
     //removes aux window
     gui.remove_aux_window();
+    
+    //setting the locker (if there are fingers on the screen) to false. used for clearing the sample
+    loop.locker_screen_has_no_finger = false;
     
     
     if (debug) {
@@ -368,6 +387,9 @@ void State_Machine::update_FOUR_FINGERS(bool is_first_time_state_is_accessed) {
     //sets the scale
     //gui.set_scale(newy);
     
+    //setting the locker (if there are fingers on the screen) to false. used for clearing the sample
+    loop.locker_screen_has_no_finger = false;git
+    
     if (debug) {
         cout << "update_FOUR_FINGERS!"<< endl;
         cout << "           x: " << f1.x << " y: " << f1.y << endl;
@@ -428,9 +450,20 @@ void State_Machine::resume() {
 //--------------------------------------------------------------
 void State_Machine::clear_loops() {
     loop.clear();
+    gui.set_scale(1);
 }
 
 //--------------------------------------------------------------
 bool State_Machine::is_loop_empty() {
     return loop.is_empty();
+}
+
+//--------------------------------------------------------------
+void State_Machine::set_feedback(float value) {
+    loop.set_feedback(value);
+}
+
+//--------------------------------------------------------------
+float State_Machine::get_feedback() {
+    return loop.get_feedback();
 }

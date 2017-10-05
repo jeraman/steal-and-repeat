@@ -47,6 +47,16 @@ class Loop
         void update_looping_area (int, int);
         void update_aux_looping_area (int, int);
     
+    
+        void  update_feedback_in_subpart_of_the_sample(int index); //updates the level of feedback
+        void  set_feedback(float);                  //sets the feedback to a new value
+        float get_feedback();                       //gets the current feedback
+        void  initialize_sum_that_checks_if_sample_is_silenced();
+        void  adds_to_sum_that_checks_if_sample_is_silenced(float);
+        bool  is_sample_silenced();
+        void  checks_if_sample_is_silenced_and_screen_has_no_fingers();
+        bool  head_has_restarted();
+    
         bool is_recording ();                      //returns if it's recording or not
         bool is_empty ();                          //if this loop is clear/empty or not
         bool there_is_looping_area();              //verifies if the looping area is currently working
@@ -62,20 +72,26 @@ class Loop
         bool playing;        //is it playing right now?
         bool debug;          //is it debugging right now?
     
+        bool locker_screen_has_no_finger;
+    
         int outpos;          //a agulha do vinil (para este loop)
         int start_index;     //index where the looping starts
         int end_index;       //index where the loop ends
-        float volume;        //stores the current volume
-        float volume_start,     volume_end;     //stores the current volume for the start and the end
-        float aux_volume_start, aux_volume_end; //stores the current volume for the start and the end for the aux
     
         int aux_outpos;      //[AUX] a agulha do vinil (para este loop)
         int aux_start_index; //[AUX] index where the looping starts
         int aux_end_index;   //[AUX] index where the loop ends
-        float aux_volume;    //[AUX] stores the current volume
-    
         int bufferSize;      //tamanho do buffer quando gravado
         int nChannels;       //número de canais do loop
+    
+
+        float volume;        //stores the current volume
+        float volume_start,     volume_end;     //stores the current volume for the start and the end
+        float aux_volume_start, aux_volume_end; //stores the current volume for the start and the end for the aux
+        float aux_volume;    //[AUX] stores the current volume
+        float feedback;      //stores the feedback value
+        float sum_that_checks_if_sample_is_silenced;
+
     
         vector<float> input_buf;        //stores the loop being currently recorded
         vector<float> output_buf;       //stores the loop that is being played

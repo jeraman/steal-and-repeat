@@ -112,8 +112,8 @@ void ofApp::update_keys() {
     //gets what text has the user typed
     char key = ipad_keyboard->getKeyPressed();
     
-    if (debug)
-        NSLog(@"key: %c", key);
+    //if (debug)
+    //    NSLog(@"key: %c", key);
 
     //disabling debug condition
     if (key=='d' || key=='D')
@@ -135,6 +135,14 @@ void ofApp::update_keys() {
             sm.stop();
         else
             sm.resume();
+    }
+    
+    if (key=='a' || key=='A') {
+        sm.set_feedback(sm.get_feedback()+0.05);
+    }
+    
+    if (key=='s' || key=='S') {
+        sm.set_feedback(sm.get_feedback()-0.05);
     }
 }
 

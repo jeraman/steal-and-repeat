@@ -44,6 +44,10 @@ public:
     void resume();
     void clear_loops();
     bool is_loop_empty();
+    void set_feedback(float);
+    float get_feedback();
+    void check_if_volume_has_changed_to_one_and_update_gui();
+    
     
     void audioIn(float * input, int bufferSize, int nChannels);
     void audioOut(float * input, int bufferSize, int nChannels);

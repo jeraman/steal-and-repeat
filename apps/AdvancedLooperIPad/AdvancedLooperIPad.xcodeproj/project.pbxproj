@@ -195,7 +195,6 @@
 				E41D40FD13B3A0D800A75A5D /* iOS+OFLib.xcodeproj */,
 				32CA4F630368D1EE00C91783 /* ofxiOS_Prefix.pch */,
 				BB24DDC910DA781C00E9C588 /* ofxiOS-Info.plist */,
-				E41D3EE513B3906D00A75A5D /* CoreOF.xcconfig */,
 				6948EE371B920CB800B5AC1A /* local_addons */,
 				E41D3ED613B38FB500A75A5D /* Project.xcconfig */,
 			);
@@ -234,6 +233,7 @@
 				E4D8936B11527B74007E1F53 /* main.mm */,
 				E4D8936D11527B74007E1F53 /* ofApp.mm */,
 				E4D8936C11527B74007E1F53 /* ofApp.h */,
+				E41D3EE513B3906D00A75A5D /* CoreOF.xcconfig */,
 			);
 			path = src;
 			sourceTree = SOURCE_ROOT;
@@ -372,11 +372,12 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				DEVELOPMENT_TEAM = 4672E2S49R;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = ofxiOS_Prefix.pch;
 				"GCC_WARN_64_TO_32_BIT_CONVERSION[arch=*64]" = NO;
 				INFOPLIST_FILE = "ofxiOS-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 9.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				PROVISIONING_PROFILE = "";
 				TARGETED_DEVICE_FAMILY = 2;
@@ -389,11 +390,12 @@
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				DEVELOPMENT_TEAM = 4672E2S49R;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = ofxiOS_Prefix.pch;
 				"GCC_WARN_64_TO_32_BIT_CONVERSION[arch=*64]" = NO;
 				INFOPLIST_FILE = "ofxiOS-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 9.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				PROVISIONING_PROFILE = "";
 				TARGETED_DEVICE_FAMILY = 2;

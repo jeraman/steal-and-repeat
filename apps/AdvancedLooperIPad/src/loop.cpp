@@ -53,6 +53,14 @@ void Loop::setup() {
     aux_outpos = -1;
     aux_volume = 1.f;
     
+    //variable that stores if the sample is silenced
+    sum_that_checks_if_sample_is_silenced = 1000;
+    
+    //sets the feedback
+    feedback = 0.7;
+    
+    locker_screen_has_no_finger = true;
+    
     //leaves debug as it is! do not modify it!
 }
 
@@ -86,8 +94,22 @@ int  Loop::get_size()
 
 //int old_outpos = 0;
 
+bool Loop::head_has_restarted() {
+    if ((outpos + (bufferSize*nChannels)) >= end_index)
+        return true;
+    else
+        return false;
+}
+
 
 void Loop::update_head_position() {
+
+    //checks if the looper needs to be stoped because it is empty (i.e. due to excessive feedback)
+    if (head_has_restarted()) {
+        cout<< "restarts!"<<endl;
+        checks_if_sample_is_silenced_and_screen_has_no_fingers();
+    }
+    
     //updating the current position
     outpos = ((outpos + (bufferSize*nChannels))%(end_index));
     
@@ -96,6 +118,8 @@ void Loop::update_head_position() {
         
         //goes directly to the start_index
         outpos = start_index;
+    
+    
     
     //repeat the same thing if there is currentyl an aux looping area
     if (there_is_aux_looping_area()) {
@@ -121,6 +145,7 @@ float Loop::interpolate_volume(int buf_index) {
     return (current_volume*2);
 }
 
+
 float Loop::interpolate_aux_volume(int buf_index) {
     //computing the normalized head pos
     float normalized_pos = (buf_index-aux_start_index)/(float)(aux_end_index-aux_start_index);
@@ -132,6 +157,68 @@ float Loop::interpolate_aux_volume(int buf_index) {
     return (current_volume*2);
 }
 
+
+//sets the feedback value (should be between 0 and 1)
+void Loop::set_feedback(float newfeedback) {
+    feedback = ofClamp(newfeedback, 0, 1);
+}
+
+
+//gets curernt feedback value
+float Loop::get_feedback() {
+    return feedback;
+}
+
+//applies feedback to the original sample at index position
+void Loop::update_feedback_in_subpart_of_the_sample(int index) {
+    
+    //applies the feeback on the first channel
+    sample[index] = sample[index] * feedback;
+    output_buf[index] = output_buf[index] * feedback;
+    
+    //and on the second channel
+    if (nChannels==2) {
+        sample[index+1] = sample[index+1] * feedback;
+        output_buf[index+1] = output_buf[index+1] * feedback;
+    }
+}
+
+/***********************************************
+ * when the head starts...
+ *     is the sum of all sample indexes close to zero?
+ *          YES - stops and erases loop
+ *          NO - re-inits variables storing the sum; and keeps summing while playing
+ ***********************************************/
+//initialize_sum_that_checks_if_sample_is_silenced
+void Loop::initialize_sum_that_checks_if_sample_is_silenced() {
+    sum_that_checks_if_sample_is_silenced = 0;
+}
+
+//adds_to_sum_that_checks_if_sample_is_silenced
+void Loop::adds_to_sum_that_checks_if_sample_is_silenced(float index) {
+    sum_that_checks_if_sample_is_silenced += abs(sample[index]);
+    
+    if (nChannels==2)
+        sum_that_checks_if_sample_is_silenced += abs(sample[index+1]);
+}
+
+//is_sample_silenced
+bool Loop::is_sample_silenced() {
+    return (sum_that_checks_if_sample_is_silenced < 0.01);
+}
+
+//checks_if_sample_is_silenced
+void Loop::checks_if_sample_is_silenced_and_screen_has_no_fingers() {
+    if (is_sample_silenced() && locker_screen_has_no_finger) {
+        clear();
+        cout<< "clear"<<endl;
+    } else {
+        initialize_sum_that_checks_if_sample_is_silenced();
+        cout<< "initialize_sum_that_checks_if_sample_is_silenced"<<endl;
+    }
+}
+
+//play function
 void Loop::play(float* &output)
 {
     if ((!is_empty()) & playing)
@@ -154,7 +241,14 @@ void Loop::play(float* &output)
             //updates left channel - main
             //output[index  ] = ofRandom(-0.5, 0.5);
             
+            //computes the current volume
             float current_volume = interpolate_volume(output_buf_index);
+            
+            //adds to the sum variables that checks if the sample is silenced
+            adds_to_sum_that_checks_if_sample_is_silenced(output_buf_index);
+            
+            //applies the feedback to the original sample (variable sample), if any
+            update_feedback_in_subpart_of_the_sample(output_buf_index);
             
             //feeds the output
             output[index  ]      = output_buf[output_buf_index] * current_volume * leftpan;
@@ -177,7 +271,7 @@ void Loop::play(float* &output)
             if (there_is_aux_looping_area()) {
                 
                 //same as before
-                output[index  ] += output_buf[aux_output_buf_index] * current_aux_volume * leftpan;
+                output[index] += output_buf[aux_output_buf_index] * current_aux_volume * leftpan;
                 
                 if (nChannels==2)
                     output[index+1] += output_buf[aux_output_buf_index] * current_aux_volume * rightpan;
@@ -282,6 +376,7 @@ void Loop::overdub_sample_vector(float* &input)
         if (nChannels==2)
             sample[(outpos + index + 1)%sample.size()] += input[index +1 ] * rightpan;
         
+        
         //[AUX] computing the index in the output_buf
         int   aux_output_buf_index = (aux_outpos + index)%sample.size();
         
@@ -294,6 +389,9 @@ void Loop::overdub_sample_vector(float* &input)
             if (nChannels==2)
                 sample[aux_output_buf_index] += input[index+1] * rightpan;
         }
+        
+    
+        
         
     }
 }
@@ -354,6 +452,8 @@ void Loop::clear()
     playing    = true;
     overdubbing = false;
     outpos = 0;
+    volume = 1.f;
+    aux_volume = 1.f;
 }
 
 void Loop::set_debug(bool debug)

@@ -388,7 +388,7 @@ void State_Machine::update_FOUR_FINGERS(bool is_first_time_state_is_accessed) {
     //gui.set_scale(newy);
     
     //setting the locker (if there are fingers on the screen) to false. used for clearing the sample
-    loop.locker_screen_has_no_finger = false;git
+    loop.locker_screen_has_no_finger = false;
     
     if (debug) {
         cout << "update_FOUR_FINGERS!"<< endl;
@@ -465,5 +465,15 @@ void State_Machine::set_feedback(float value) {
 
 //--------------------------------------------------------------
 float State_Machine::get_feedback() {
-    return loop.get_feedback();
+    return loop.feedback;
+}
+
+//--------------------------------------------------------------
+void State_Machine::set_delay(float value) {
+    loop.set_delay(value);
+}
+
+//--------------------------------------------------------------
+float State_Machine::get_delay() {
+    return loop.delay;
 }

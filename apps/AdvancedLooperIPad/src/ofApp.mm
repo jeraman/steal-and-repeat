@@ -53,7 +53,7 @@ void ofApp::setup_sound(){
         NSLog(@"      N_CHANNELS:  %i \n", N_CHANNELS);
         NSLog(@"      SAMPLE_RATE: %i \n", SAMPLE_RATE);
         NSLog(@"      BUFFER_SIZE: %i \n", BUFFER_SIZE);
-    }
+    }    
     
 }
 
@@ -138,11 +138,19 @@ void ofApp::update_keys() {
     }
     
     if (key=='a' || key=='A') {
-        sm.set_feedback(sm.get_feedback()+0.05);
+        sm.set_feedback(sm.get_feedback()-0.05);
     }
     
     if (key=='s' || key=='S') {
-        sm.set_feedback(sm.get_feedback()-0.05);
+        sm.set_feedback(sm.get_feedback()+0.05);
+    }
+    
+    if (key=='q' || key=='Q') {
+        sm.set_delay(sm.get_delay()-0.05);
+    }
+    
+    if (key=='w' || key=='W') {
+        sm.set_delay(sm.get_delay()+0.05);
     }
 }
 

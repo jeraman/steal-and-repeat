@@ -45,9 +45,10 @@ void Gui::draw(Loop* first) {
         ofSetColor(200);
         string fps("FPS: ");
         ofDrawBitmapString(fps + ofToString(ofGetFrameRate()), 20, 20);
-        //debugging
         string feedback("FEEDBACK: ");
         ofDrawBitmapString(feedback + ofToString(first->feedback), ofPoint(20, 80));
+        string delay("DELAY: ");
+        ofDrawBitmapString(delay + ofToString(first->delay), ofPoint(20, 110));
         
     }
 }

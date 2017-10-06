@@ -18,8 +18,8 @@ class Loop
     
         void setup();
     
-        void audio_input (float*&); //should be called when there's any audio input
-        void audio_output(float*&); //should be called when there's any audio output
+        void audio_input (float*&);                   //should be called when there's any audio input
+        void audio_output(float*&);                   //should be called when there's any audio output
     
         void play (float* &output);                   //plays the loop
         void overdub_sample_vector (float* &input);   //adds more audio info inside this loop
@@ -46,25 +46,27 @@ class Loop
         void update_output_buffer ();                 //updates the output buffer
         void update_looping_area (int, int);
         void update_aux_looping_area (int, int);
+        void update_head_position();                  //updates the head position
+        void update_feedback_in_subpart_of_the_sample(int index); //updates the level of feedback
+        void set_feedback(float);                     //sets the feedback to a new value
+        void set_delay(float);                        //sets the feedback to a new value
+        void compute_delay_offset_in_main_outpos();
+        void compute_delay_offset_in_aux_outpos();
+        void initialize_sum_that_checks_if_sample_is_silenced();
+        void adds_to_sum_that_checks_if_sample_is_silenced(float);
+        void checks_if_sample_is_silenced_and_screen_has_no_fingers();
+        bool is_sample_silenced();
+        bool head_has_restarted();
+        bool is_recording ();                          //returns if it's recording or not
+        bool is_empty ();                              //if this loop is clear/empty or not
+        bool there_is_looping_area();                  //verifies if the looping area is currently working
+        bool there_is_aux_looping_area();              //verifies if the aux looping area is currently working
     
-    
-        void  update_feedback_in_subpart_of_the_sample(int index); //updates the level of feedback
-        void  set_feedback(float);                  //sets the feedback to a new value
-        float get_feedback();                       //gets the current feedback
-        void  initialize_sum_that_checks_if_sample_is_silenced();
-        void  adds_to_sum_that_checks_if_sample_is_silenced(float);
-        bool  is_sample_silenced();
-        void  checks_if_sample_is_silenced_and_screen_has_no_fingers();
-        bool  head_has_restarted();
-    
-        bool is_recording ();                      //returns if it's recording or not
-        bool is_empty ();                          //if this loop is clear/empty or not
-        bool there_is_looping_area();              //verifies if the looping area is currently working
-        bool there_is_aux_looping_area();          //verifies if the aux looping area is currently working
-        int  get_size ();                          //gets the size of this loop
-        void update_head_position();               //updates the head position
-        float interpolate_volume(int);             //function that interpolates the volume depending on volume_start, volume_end, based on a certain index (int)
-        float interpolate_aux_volume(int);         //same thing, but for the aux
+        int  get_size ();                                    //gets the size of this loop
+        int  get_delayed_index_from_main_current_index(int); //gets the delayed index for the main (i.e. full loop) current index
+        int  get_delayed_index_from_aux_current_index(int);  //gets the delayed index for the aux (i.e. sublooping area) current index
+        float interpolate_volume(int);                       //function that interpolates the volume depending on volume_start, volume_end, based on a certain index (int)
+        float interpolate_aux_volume(int);                   //same thing, but for the aux
     
         bool muted;          //to mute the loop
         bool overdubbing;    //indicates if this loop is currently overdubbing or not
@@ -81,6 +83,10 @@ class Loop
         int aux_outpos;      //[AUX] a agulha do vinil (para este loop)
         int aux_start_index; //[AUX] index where the looping starts
         int aux_end_index;   //[AUX] index where the loop ends
+    
+        int delay_offset_in_main_outpos; //offset to be applied in the outpos
+        int delay_offset_in_aux_outpos; //offset to be applied in the outpos
+    
         int bufferSize;      //tamanho do buffer quando gravado
         int nChannels;       //número de canais do loop
     
@@ -89,8 +95,10 @@ class Loop
         float volume_start,     volume_end;     //stores the current volume for the start and the end
         float aux_volume_start, aux_volume_end; //stores the current volume for the start and the end for the aux
         float aux_volume;    //[AUX] stores the current volume
-        float feedback;      //stores the feedback value
         float sum_that_checks_if_sample_is_silenced;
+    
+        float feedback;      //stores the feedback value
+        float delay;         //stores the amount of delay
 
     
         vector<float> input_buf;        //stores the loop being currently recorded

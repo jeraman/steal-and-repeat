@@ -45,7 +45,9 @@ public:
     void clear_loops();
     bool is_loop_empty();
     void set_feedback(float);
+    void set_delay(float);
     float get_feedback();
+    float get_delay();
     void check_if_volume_has_changed_to_one_and_update_gui();
     
     

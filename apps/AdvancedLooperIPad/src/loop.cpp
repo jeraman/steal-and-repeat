@@ -97,9 +97,8 @@ int  Loop::get_size()
     return sample.size();
 }
 
-//int old_outpos = 0;
-
-bool Loop::head_has_restarted() {
+bool Loop::head_has_restarted()
+{
     if ((outpos + (bufferSize*nChannels)) >= end_index)
         return true;
     else
@@ -107,16 +106,14 @@ bool Loop::head_has_restarted() {
 }
 
 
-void Loop::update_head_position() {
+void Loop::update_head_position()
+{
 
     //checks if the looper needs to be stoped because it is empty (i.e. due to excessive feedback)
-    if (head_has_restarted()) {
-        //cout<< "restarts!"<<endl;
-        checks_if_sample_is_silenced_and_screen_has_no_fingers();
-    }
+    if (head_has_restarted())
+        resets_sum_checker();
     
     //updating the current position
-    //outpos = ((outpos + (bufferSize*nChannels))%(end_index));
     outpos = ((outpos + (bufferSize*nChannels))%(end_index));
     
     //checks if the outpos if suitable
@@ -138,7 +135,8 @@ void Loop::update_head_position() {
 }
 
 
-float Loop::interpolate_volume(int buf_index) {
+float Loop::interpolate_volume(int buf_index)
+{
     //computing the normalized head pos
     float normalized_pos = (buf_index-start_index)/(float)(end_index-start_index);
     
@@ -150,7 +148,8 @@ float Loop::interpolate_volume(int buf_index) {
 }
 
 
-float Loop::interpolate_aux_volume(int buf_index) {
+float Loop::interpolate_aux_volume(int buf_index)
+{
     //computing the normalized head pos
     float normalized_pos = (buf_index-aux_start_index)/(float)(aux_end_index-aux_start_index);
     
@@ -170,14 +169,25 @@ float Loop::interpolate_aux_volume(int buf_index) {
 // not tested yet if it works with aux looping area
 
 //sets the delay value (should be between 0 and 1)
-void Loop::set_delay (float value) {
-    delay = ofClamp(value, 0, 1);
+void Loop::set_delay (float value)
+{
+    delay = ofClamp(value, 0.0, 1.0);
+    compute_delay_offset();
+}
+
+//computes the outpos offset
+void Loop::compute_delay_offset ()
+{
+    //also updates the offset caused by delay
     compute_delay_offset_in_main_outpos();
     compute_delay_offset_in_aux_outpos();
+    
+    
 }
 
 //computes the outpos offset caused by introduction of delay
-void Loop::compute_delay_offset_in_main_outpos () {
+void Loop::compute_delay_offset_in_main_outpos ()
+{
     if (!is_empty()) {
         delay_offset_in_main_outpos = (int)((end_index-start_index)*delay);
         
@@ -188,7 +198,8 @@ void Loop::compute_delay_offset_in_main_outpos () {
 }
 
 //computes the outpos offset caused by introduction of delay
-void Loop::compute_delay_offset_in_aux_outpos () {
+void Loop::compute_delay_offset_in_aux_outpos ()
+{
     if (!is_empty() && there_is_aux_looping_area()) {
         delay_offset_in_aux_outpos = (int)((aux_end_index-aux_start_index)*delay);
         
@@ -199,25 +210,32 @@ void Loop::compute_delay_offset_in_aux_outpos () {
 }
 
 
-//function that return the delayed index for the current index
-int Loop::get_delayed_index_from_main_current_index (int index) {
-    int delay_outpos = index - delay_offset_in_main_outpos;
+//function that return the delayed index for the current index od the MAIN outpos
+int Loop::get_delayed_index_from_main_current_index (int index)
+{
+    int delay_outpos;
+    int index_offset = index - delay_offset_in_main_outpos;
     
-    //if (delay_outpos < 0)
-    //    delay_outpos = output_buf.size() - abs(delay_outpos);
-    if (delay_outpos < start_index)
-        delay_outpos = ((end_index) - abs(delay_outpos));
+    if (index_offset < start_index) {
+        int offset_to_start = start_index - index_offset;
+        delay_outpos = end_index - offset_to_start;
+    } else
+        delay_outpos = index_offset;
     
     return delay_outpos;
 }
 
-//function that return the delayed index for the current index
-int Loop::get_delayed_index_from_aux_current_index (int index) {
-    int delay_outpos = index - delay_offset_in_aux_outpos;
+//function that return the delayed index for the current index of the AUX outpos
+int Loop::get_delayed_index_from_aux_current_index (int index)
+{
+    int delay_outpos;
+    int index_offset = index - delay_offset_in_aux_outpos;
     
-    if (delay_outpos < aux_start_index)
-        delay_outpos = (aux_end_index) - abs(delay_outpos);
-    
+    if (index_offset < aux_start_index) {
+        int offset_to_start = aux_start_index - index_offset;
+        delay_outpos = aux_end_index - offset_to_start;
+    } else
+        delay_outpos = index_offset;
     return delay_outpos;
 }
 
@@ -226,12 +244,14 @@ int Loop::get_delayed_index_from_aux_current_index (int index) {
  ***********************************************/
 
 //sets the feedback value (should be between 0 and 1)
-void Loop::set_feedback(float newfeedback) {
+void Loop::set_feedback(float newfeedback)
+{
     feedback = ofClamp(newfeedback, 0, 1);
 }
 
 //applies feedback to the original sample at index position
-void Loop::update_feedback_in_subpart_of_the_sample(int index) {
+void Loop::update_feedback_in_subpart_of_the_sample(int index)
+{
     
     //applies the feeback on the first channel
     sample[index] = sample[index] * feedback;
@@ -251,13 +271,17 @@ void Loop::update_feedback_in_subpart_of_the_sample(int index) {
  *          YES - stops and erases loop
  *          NO - re-inits variables storing the sum; and keeps summing while playing
  ***********************************************/
+
+
 //initialize_sum_that_checks_if_sample_is_silenced
-void Loop::initialize_sum_that_checks_if_sample_is_silenced() {
+void Loop::initialize_sum_that_checks_if_sample_is_silenced()
+{
     sum_that_checks_if_sample_is_silenced = 0;
 }
 
 //adds_to_sum_that_checks_if_sample_is_silenced
-void Loop::adds_to_sum_that_checks_if_sample_is_silenced(float index) {
+void Loop::adds_to_sum_that_checks_if_sample_is_silenced(float index)
+{
     sum_that_checks_if_sample_is_silenced += abs(sample[index]);
     
     if (nChannels==2)
@@ -269,113 +293,130 @@ bool Loop::is_sample_silenced() {
     return (sum_that_checks_if_sample_is_silenced < 0.01);
 }
 
+
 //checks_if_sample_is_silenced
-void Loop::checks_if_sample_is_silenced_and_screen_has_no_fingers() {
-    if (is_sample_silenced() && locker_screen_has_no_finger) {
-        clear();
-        //cout<< "clear"<<endl;
-    } else {
-        initialize_sum_that_checks_if_sample_is_silenced();
-        //cout<< "initialize_sum_that_checks_if_sample_is_silenced"<<endl;
-    }
+bool Loop::sample_is_silenced_and_screen_has_no_fingers()
+{
+    return (is_sample_silenced() && locker_screen_has_no_finger);
 }
+
+//checks_if_sample_is_silenced
+void Loop::resets_sum_checker()
+{
+    if (sample_is_silenced_and_screen_has_no_fingers())
+        clear();
+    else
+        initialize_sum_that_checks_if_sample_is_silenced();
+}
+
+
 
 
 //--------------------------------------------------------------
 //play function
 void Loop::play(float* &output)
 {
+    //if there is something to play, and looper is set to play
     if ((!is_empty()) & playing)
-    {
-        //interates of buffersize for loading the output
-        for(int i=0; i<bufferSize; i++) {
-            
-            //debug only
-            if (output_buf.size() == 0) {
-                cout << "output_buf is empty" << endl;
-                return;
-            }
-            
-            //computing the index
-            int index            = i*nChannels;
-            
-            //computing the index in the output_buf
-            int output_buf_index = (outpos + index)%output_buf.size();
-            
-            //computes the current volume
-            float current_volume = interpolate_volume(output_buf_index);
-            
-            //adds to the sum variables that checks if the sample is silenced
-            adds_to_sum_that_checks_if_sample_is_silenced(output_buf_index);
-            
-            //applies the feedback to the original sample (variable sample), if any
-            update_feedback_in_subpart_of_the_sample(output_buf_index);
-            
-            //feeds the output with the current position
-            output[index  ]      = output_buf[output_buf_index] * 0.5 * current_volume * leftpan;
-            
-            //gets the delayed index
-            int delayed_index = get_delayed_index_from_main_current_index(output_buf_index);
-            
-            //feeds the output with the current delayed position
-            output[index  ]     += output_buf[delayed_index] * 0.5 *  current_volume * leftpan;
-            
-            //in this case, we are getting the value from the right, and feeding the left channel
-            //because we are using only the left channel of the focus right
-            if (nChannels==2) {
-                output[index+1]  = output_buf[output_buf_index] * 0.5 *  current_volume * rightpan;
-                output[index+1] += output_buf[delayed_index] * 0.5 *  current_volume * rightpan;
-                
-            }
-            
-            //in case there are more channels (eg. x channels), remember to update output[index+x]. so far, this code will only work with n channels.
-            
-            //[AUX] computing the index in the output_buf
-            int   aux_output_buf_index = (aux_outpos + index)%output_buf.size();
-            
-            float current_aux_volume = interpolate_aux_volume(aux_output_buf_index);
-            
-            //if there is currentyl an aux looping area
-            if (there_is_aux_looping_area()) {
-                
-                //same as before
-                output[index] += output_buf[aux_output_buf_index] * 0.5 * current_aux_volume * leftpan;
-                
-                //gets the delayed index of the aux
-                delayed_index = get_delayed_index_from_aux_current_index(aux_output_buf_index);
-                
-                //feeds the output with the current delayed position
-                output[index] += output_buf[delayed_index] * 0.5 *  current_aux_volume * leftpan;
-                
-                if (nChannels==2) {
-                    output[index+1] += output_buf[aux_output_buf_index] * 0.5 * current_aux_volume * rightpan;
-                    output[index+1] += output_buf[delayed_index] * 0.5 *  current_aux_volume * rightpan;
-                }
-            }
-            
-        }
-        
-        update_head_position();
-        
-        //updates output buf if overdubing and got to an end
-        if (overdubbing)
-            update_output_buffer();
-        
-    } else { //if it not playing neither there is anything stored to play
+        process_output_buffer_in_a_loop(output);
+    //if it not playing neither there is anything stored to play
+    else
+        mute_output_buffer(output);
+}
 
-        for(int i=0; i<bufferSize; i++) {
-            //computing the index
-            int   index = i*nChannels;
-            
-            //making it mute
-            output[index  ] = 0;
+
+//--------------------------------------------------------------
+void Loop::mute_output_buffer(float* &output)
+{
+    for(int i=0; i<bufferSize; i++) {
+        output[i*nChannels] = 0;
+        output[(i*nChannels)+1] = 0;
+    }
+}
+
+//--------------------------------------------------------------
+void Loop::process_output_buffer_in_a_loop(float* &output)
+{
+    for(int i=0; i<bufferSize; i++) {
+        
+        //debug only. you can delete me latter
+        if (output_buf.size() == 0) {
+            cout << "output_buf is empty" << endl;
+            return;
         }
+        
+        process_output_buffer_at_one_index(output, i);
     }
     
-    //if (!playing)
-    //cout << "is playing?" << playing <<endl;
+    update_head_position();
     
+    if (overdubbing)
+        update_output_buffer();
 }
+
+
+//--------------------------------------------------------------
+void Loop::process_output_buffer_at_one_index(float* &output, int i) {
+    
+    //computing the index
+    int index            = i*nChannels;
+    
+    //computing the index in the output_buf
+    int output_buf_index = (outpos + index)%output_buf.size();
+    
+    //gets the delayed index
+    int delayed_index = get_delayed_index_from_main_current_index(outpos+index);
+    
+    //computes the current volume
+    float current_volume = interpolate_volume(output_buf_index);
+    
+    //adds to the sum variables that checks if the sample is silenced
+    adds_to_sum_that_checks_if_sample_is_silenced(output_buf_index);
+    
+    //applies the feedback to the original sample (variable sample), if any
+    update_feedback_in_subpart_of_the_sample(output_buf_index);
+    
+    //feeds the output with the current position
+    output[index  ]      = output_buf[output_buf_index] * 0.5 * current_volume * leftpan;
+        
+    //feeds the output with the current delayed position
+    output[index  ]     += output_buf[delayed_index] * 0.5 *  current_volume * leftpan;
+
+    
+    //in this case, we are getting the value from the right, and feeding the left channel
+    //because we are using only the left channel of the focus right
+    if (nChannels==2) {
+        output[index+1]  = output_buf[output_buf_index] * 0.5 *  current_volume * rightpan;
+        output[index+1] += output_buf[delayed_index] * 0.5 *  current_volume * rightpan;
+        
+    }
+    
+    //in case there are more channels (eg. x channels), remember to update output[index+x]. so far, this code will only work with n channels.
+    
+    //[AUX] computing the index in the output_buf
+    int   aux_output_buf_index = (aux_outpos + index)%output_buf.size();
+    
+    //gets the delayed index of the aux
+    delayed_index = get_delayed_index_from_aux_current_index(aux_outpos + index);
+    
+    float current_aux_volume = interpolate_aux_volume(aux_output_buf_index);
+    
+    //if there is currentyl an aux looping area
+    if (there_is_aux_looping_area()) {
+        
+        //same as before
+        output[index] += output_buf[aux_output_buf_index] * 0.5 * current_aux_volume * leftpan;
+        
+        //feeds the output with the current delayed position
+        output[index] += output_buf[delayed_index] * 0.5 *  current_aux_volume * leftpan;
+        
+        if (nChannels==2) {
+            output[index+1] += output_buf[aux_output_buf_index] * 0.5 * current_aux_volume * rightpan;
+            output[index+1] += output_buf[delayed_index] * 0.5 *  current_aux_volume * rightpan;
+        }
+    }
+}
+
 
 //////////////////////////////////
 // grava um determinado loop com o id pedido
@@ -496,11 +537,6 @@ void Loop::set_head_absolute(int position)
 void Loop::update_output_buffer()
 {
     output_buf = sample;
-    
-    //also updates the offset caused by delay
-    compute_delay_offset_in_main_outpos();
-    compute_delay_offset_in_aux_outpos();
-    
 }
 
 //////////////////////////////////

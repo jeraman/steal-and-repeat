@@ -50,11 +50,16 @@ class Loop
         void update_feedback_in_subpart_of_the_sample(int index); //updates the level of feedback
         void set_feedback(float);                     //sets the feedback to a new value
         void set_delay(float);                        //sets the feedback to a new value
+        void compute_delay_offset();
         void compute_delay_offset_in_main_outpos();
         void compute_delay_offset_in_aux_outpos();
         void initialize_sum_that_checks_if_sample_is_silenced();
         void adds_to_sum_that_checks_if_sample_is_silenced(float);
-        void checks_if_sample_is_silenced_and_screen_has_no_fingers();
+        void resets_sum_checker();
+        void process_output_buffer_in_a_loop(float* &output);
+        void process_output_buffer_at_one_index(float* &output, int i);
+        void mute_output_buffer(float* &output);
+        bool sample_is_silenced_and_screen_has_no_fingers();
         bool is_sample_silenced();
         bool head_has_restarted();
         bool is_recording ();                          //returns if it's recording or not
@@ -67,6 +72,7 @@ class Loop
         int  get_delayed_index_from_aux_current_index(int);  //gets the delayed index for the aux (i.e. sublooping area) current index
         float interpolate_volume(int);                       //function that interpolates the volume depending on volume_start, volume_end, based on a certain index (int)
         float interpolate_aux_volume(int);                   //same thing, but for the aux
+
     
         bool muted;          //to mute the loop
         bool overdubbing;    //indicates if this loop is currently overdubbing or not
@@ -99,7 +105,6 @@ class Loop
     
         float feedback;      //stores the feedback value
         float delay;         //stores the amount of delay
-
     
         vector<float> input_buf;        //stores the loop being currently recorded
         vector<float> output_buf;       //stores the loop that is being played

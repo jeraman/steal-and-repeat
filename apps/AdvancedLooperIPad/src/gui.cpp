@@ -48,8 +48,23 @@ void Gui::draw(Loop* first) {
         string feedback("FEEDBACK: ");
         ofDrawBitmapString(feedback + ofToString(first->feedback), ofPoint(20, 80));
         string delay("DELAY: ");
-        ofDrawBitmapString(delay + ofToString(first->delay), ofPoint(20, 110));
+        ofDrawBitmapString(delay +
+                           ofToString(first->delay) +
+                           ofToString(" — ") +
+                           ofToString(first->delay_offset_in_main_outpos) +
+                           ofToString(" samples")
+                           , ofPoint(20, 110));
         
+        ofDrawBitmapString(ofToString("outpos: ") +
+                           ofToString(first->outpos) +
+                           ofToString("   delayed_outpos: ") +
+                           ofToString(first->get_delayed_index_from_main_current_index(first->outpos)) +
+                           ofToString("   start_index: ") +
+                           ofToString(first->start_index) +
+                           ofToString("   end_index: ") +
+                           ofToString(first->end_index)
+                           , ofPoint(20, 150));
+
     }
 }
 

@@ -33,6 +33,8 @@ void State_Machine::setup() {
     //setting up buffers that will store the lic mic input
     gui.init_mic_buffer(loop.bufferSize);
 
+    //setting debug to false
+    set_debug(true);
 }
 
 
@@ -68,6 +70,8 @@ void State_Machine::update(Input_Interface inter) {
             update_FOUR_FINGERS(is_first_time_state_is_accessed);
             break;
     }
+    
+    loop.compute_delay_offset();
     
     //updates last state
     last_state = state;

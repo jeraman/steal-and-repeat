@@ -70,6 +70,7 @@ class Loop
         int  get_size ();                                    //gets the size of this loop
         int  get_delayed_index_from_main_current_index(int); //gets the delayed index for the main (i.e. full loop) current index
         int  get_delayed_index_from_aux_current_index(int);  //gets the delayed index for the aux (i.e. sublooping area) current index
+        int  get_delayed_index_based_on_offset_start_and_end (int, int, int , int);
         float interpolate_volume(int);                       //function that interpolates the volume depending on volume_start, volume_end, based on a certain index (int)
         float interpolate_aux_volume(int);                   //same thing, but for the aux
 

@@ -8,7 +8,7 @@
 
 #include "gui.h"
 
-
+//--------------------------------------------------------------
 Gui::Gui()
 {
     debug=false;
@@ -18,58 +18,39 @@ Gui::Gui()
     scale_window2_start = 1, scale_window2_end = 1;
 }
 
+//--------------------------------------------------------------
 Gui::Gui(bool debug)
 {
     this->set_debug(debug);
 }
 
+//--------------------------------------------------------------
 Gui::~Gui()
 {
     
 }
 
+//--------------------------------------------------------------
 //@TODO - update the visuals
-void Gui::draw(Loop* first) {
+void Gui::draw(Loop* first)
+{
     
     drawBackground(first->is_recording());
     drawFirstLoop(first);
+    drawDelayedFirstLoop(first);
     drawHead(first);
     drawAuxHead(first);
     drawMic();
-    
+    drawDebug(first);
     
     if (position_window1_start != -1 && position_window1_end != -1)
         drawWindow(first->is_recording());
-    
-    if (debug) {
-        ofSetColor(200);
-        string fps("FPS: ");
-        ofDrawBitmapString(fps + ofToString(ofGetFrameRate()), 20, 20);
-        string feedback("FEEDBACK: ");
-        ofDrawBitmapString(feedback + ofToString(first->feedback), ofPoint(20, 80));
-        string delay("DELAY: ");
-        ofDrawBitmapString(delay +
-                           ofToString(first->delay) +
-                           ofToString(" — ") +
-                           ofToString(first->delay_offset_in_main_outpos) +
-                           ofToString(" samples")
-                           , ofPoint(20, 110));
-        
-        ofDrawBitmapString(ofToString("outpos: ") +
-                           ofToString(first->outpos) +
-                           ofToString("   delayed_outpos: ") +
-                           ofToString(first->get_delayed_index_from_main_current_index(first->outpos)) +
-                           ofToString("   start_index: ") +
-                           ofToString(first->start_index) +
-                           ofToString("   end_index: ") +
-                           ofToString(first->end_index)
-                           , ofPoint(20, 150));
-
-    }
 }
 
+//--------------------------------------------------------------
 //draws the background
-void Gui::drawBackground(bool is_recording) {
+void Gui::drawBackground(bool is_recording)
+{
     
     //draws the background
     ofBackground(255, 150);
@@ -82,85 +63,94 @@ void Gui::drawBackground(bool is_recording) {
 }
 
 
+//--------------------------------------------------------------
 //draws the first loop
 void Gui::drawFirstLoop(Loop* first)
 {
     //checks if there is first. continues to execute if there is
-    if (first->is_empty()) {
+    if (first->is_empty())
         return;
-    }
     
     //start drawing first waveform
     ofSetColor(30);
     ofSetLineWidth(4);
     
-    float posy = ofGetHeight()/2.0;
-    
-    int loopsize = first->sample.size();
-    
     //iterates over the screenpixels
-    for (unsigned int i = 0; i < ofGetWidth(); i++){
-        //gets the correspond position of the index of the loop and the screen width
-        //float posx = ofMap(i, 0, loopsize, 0, ofGetWidth());
-        
-        //mapping the screen width to the position in the array
-        int convWidthToSamples = (int)((i/(float)ofGetWidth())*loopsize);
-        
-        //drawing the corresponding rectangle
-        //float sizey = ofMap(first->sample[convWidthToSamples], -1, 1, -posy, posy);
-        float sizey = 4*ofMap(abs(first->sample[convWidthToSamples]), -1, 1, -posy, posy);
-        float final_scale;
-        
-        final_scale = sizey*scale_whole_loop;
-        
-        //scaling according to the window
-        if (there_is_an_window()) {
-        
-            //if the header is inside the window area
-            if (i > position_window1_start && i < position_window1_end) {
-                
-                //computing the normalized head pos
-                float normalized_head_pos = (i-position_window1_start)/(float)(position_window1_end-position_window1_start);
-                
-                //computing the current scale
-                float current_scale = scale_window1_start*(1-normalized_head_pos) + scale_window1_end*(normalized_head_pos);
-                
-                //normalizing
-                current_scale = (1-(current_scale/ ofGetHeight()))*2;
-                
-                //applying the scale to this excerpt
-                final_scale = sizey * current_scale;
-            }
-        }
-        
-        //scaling according to the aux window
-        if (there_is_an_aux_window) {
-            
-            //if the header is inside the window area
-            if (i > position_window2_start && i < position_window2_end) {
-                
-                //computing the normalized head pos
-                float normalized_head_pos = (i-position_window2_start)/(float)(position_window2_end-position_window2_start);
-                
-                //computing the current scale
-                float current_scale = scale_window2_start*(1-normalized_head_pos) + scale_window2_end*(normalized_head_pos);
-                
-                //normalizing
-                current_scale = (1-(current_scale/ ofGetHeight()))*2;
-                
-                //applying the scale to this excerpt
-                final_scale = sizey * current_scale;
-            }
-        }
-        
-        ofDrawRectangle(i,posy,1,final_scale);
-        ofDrawRectangle(i,posy,1,-final_scale);
-        
-    }
+    for (int i = 0; i < ofGetWidth(); i++)
+        drawLoopPartAtindex(first, i);
 }
 
 
-void Gui::drawHead(Loop* first) {
+//--------------------------------------------------------------
+void Gui::drawLoopPartAtindex(Loop* first, int index)
+{
+    float posy     = ofGetHeight()/2.0;
+    int   loopsize = first->sample.size();
+    
+    //mapping the screen width to the position in the array
+    int convWidthToSamples = (int)((index/(float)ofGetWidth())*loopsize);
+    
+    //drawing the corresponding rectangle
+    float sizey = 4*ofMap(abs(first->sample[convWidthToSamples]), -1, 1, -posy, posy);
+    
+    float final_scale = sizey*scale_whole_loop;
+    
+    if (there_is_an_window() && isIndexWithinMainWindowRange(index))
+        final_scale = computeScalePerWindowType(index,
+                                                  sizey,
+                                                  position_window1_start,
+                                                  position_window1_end,
+                                                  scale_window1_start,
+                                                  scale_window1_end);
+    
+    if (there_is_an_aux_window && isIndexWithinAuxWindowRange(index))
+        final_scale = computeScalePerWindowType(index,
+                                                  sizey,
+                                                  position_window2_start,
+                                                  position_window2_end,
+                                                  scale_window2_start,
+                                                  scale_window2_end);
+    
+    ofDrawRectangle(index,posy,1, final_scale);
+    ofDrawRectangle(index,posy,1,-final_scale);
+}
+
+
+//--------------------------------------------------------------
+float  Gui::computeScalePerWindowType(int index, int sizey, int pos_window_start, int pos_window_ends, int scale_window_start, int scale_window_ends)
+{
+    float normalized_head_pos = (index-pos_window_start)/(float)(pos_window_ends-pos_window_start);
+    float current_scale = scale_window_start*(1-normalized_head_pos) + scale_window_ends*(normalized_head_pos);
+    current_scale = (1-(current_scale/ ofGetHeight()))*2;
+        
+    return (sizey * current_scale);
+}
+
+
+//--------------------------------------------------------------
+bool Gui::isIndexWithinMainWindowRange(int index)
+{
+    return (index > position_window1_start && index < position_window1_end);
+}
+
+
+//--------------------------------------------------------------
+bool Gui::isIndexWithinAuxWindowRange(int index)
+{
+    return (index > position_window2_start && index < position_window2_end);
+}
+
+
+//--------------------------------------------------------------
+//draws the first loop
+void Gui::drawDelayedFirstLoop(Loop* first)
+{
+    
+}
+
+//--------------------------------------------------------------
+void Gui::drawHead(Loop* first)
+{
     
     //getting the first loop if available
     //Loop* first = lm.get_loop(' ');
@@ -184,7 +174,9 @@ void Gui::drawHead(Loop* first) {
     
 }
 
-void Gui::drawAuxHead(Loop* first) {
+//--------------------------------------------------------------
+void Gui::drawAuxHead(Loop* first)
+{
     
     //getting the first loop if available
     //Loop* first = lm.get_loop(' ');
@@ -209,8 +201,9 @@ void Gui::drawAuxHead(Loop* first) {
 }
 
 
-
-void Gui:: drawWindow(bool is_recording) {
+//--------------------------------------------------------------
+void Gui:: drawWindow(bool is_recording)
+{
     //sets color
     ofSetColor(150, 100);
     
@@ -269,8 +262,10 @@ void Gui:: drawWindow(bool is_recording) {
     }
 }
 
-// draw the left channel:
-void Gui::drawMic() {
+//--------------------------------------------------------------
+// only draws the left channel:
+void Gui::drawMic()
+{
     
     ofPushStyle();
     ofPushMatrix();
@@ -295,9 +290,40 @@ void Gui::drawMic() {
     ofPopStyle();
 }
 
+//--------------------------------------------------------------
+void Gui::drawDebug(Loop* first)
+{
+    if (debug) {
+        ofSetColor(200);
+        string fps("FPS: ");
+        ofDrawBitmapString(fps + ofToString(ofGetFrameRate()), 20, 20);
+        string feedback("FEEDBACK: ");
+        ofDrawBitmapString(feedback + ofToString(first->feedback), ofPoint(20, 80));
+        string delay("DELAY: ");
+        ofDrawBitmapString(delay +
+                           ofToString(first->delay) +
+                           ofToString(" — ") +
+                           ofToString(first->delay_offset_in_main_outpos) +
+                           ofToString(" samples")
+                           , ofPoint(20, 110));
+        
+        ofDrawBitmapString(ofToString("outpos: ") +
+                           ofToString(first->outpos) +
+                           ofToString("   delayed_outpos: ") +
+                           ofToString(first->get_delayed_index_from_main_current_index(first->outpos)) +
+                           ofToString("   start_index: ") +
+                           ofToString(first->start_index) +
+                           ofToString("   end_index: ") +
+                           ofToString(first->end_index)
+                           , ofPoint(20, 150));
+        
+    }
+}
+
 
 //--------------------------------------------------------------
-void Gui::init_mic_buffer(int bufferSize) {
+void Gui::init_mic_buffer(int bufferSize)
+{
     
     //for (int i = 0; i < bufferSize; i++)
     //    leftMic.push_back(0);
@@ -311,7 +337,8 @@ void Gui::init_mic_buffer(int bufferSize) {
 
 
 //--------------------------------------------------------------
-void Gui::update_mic_buffer(float * input, int bufferSize, int nChannels) {
+void Gui::update_mic_buffer(float * input, int bufferSize, int nChannels)
+{
     
     for (int i = 0; i < bufferSize; i++){
         leftMic[i]	= input[i*nChannels];
@@ -321,10 +348,13 @@ void Gui::update_mic_buffer(float * input, int bufferSize, int nChannels) {
     
 }
 
-bool Gui::there_is_an_window() {
+//--------------------------------------------------------------
+bool Gui::there_is_an_window()
+{
     return (position_window1_start != -1 && position_window1_end!=-1);
 }
 
+//--------------------------------------------------------------
 void Gui::set_window_with_scale(int x1, int x2, int y1, int y2)
 {
     position_window1_start = x1;
@@ -334,6 +364,7 @@ void Gui::set_window_with_scale(int x1, int x2, int y1, int y2)
     
 }
 
+//--------------------------------------------------------------
 void Gui::set_aux_window_with_scale(int x1, int x2, int y1, int y2)
 {
     position_window2_start = x1;
@@ -343,6 +374,7 @@ void Gui::set_aux_window_with_scale(int x1, int x2, int y1, int y2)
     there_is_an_aux_window = true;
 }
 
+//--------------------------------------------------------------
 void Gui::remove_window()
 {
     position_window1_start = -1;
@@ -351,6 +383,7 @@ void Gui::remove_window()
     scale_window1_end = 1  ;
 }
 
+//--------------------------------------------------------------
 void Gui::remove_aux_window()
 {
     position_window2_start = -1;
@@ -360,23 +393,13 @@ void Gui::remove_aux_window()
     there_is_an_aux_window = false;
 }
 
-
+//--------------------------------------------------------------
 void Gui::set_debug(bool debug)
 {
     this->debug=debug;
 }
 
-/*
-void Gui::set_head_offset (int head_offset)
-{
-    this->head_offset=head_offset;
-}
-
-int Gui::get_head_offset ()
-{
-    return this->head_offset;
-}*/
-
+//--------------------------------------------------------------
 void Gui::set_scale (float scale)
 {
     this->scale_whole_loop=scale;

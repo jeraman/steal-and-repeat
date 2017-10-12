@@ -213,6 +213,7 @@ void Loop::compute_delay_offset_in_aux_outpos ()
 //function that return the delayed index for the current index od the MAIN outpos
 int Loop::get_delayed_index_from_main_current_index (int index)
 {
+    /*
     int delay_outpos;
     int index_offset = index - delay_offset_in_main_outpos;
     
@@ -223,17 +224,40 @@ int Loop::get_delayed_index_from_main_current_index (int index)
         delay_outpos = index_offset;
     
     return delay_outpos;
+     */
+    return get_delayed_index_based_on_offset_start_and_end(index,
+                                                           delay_offset_in_main_outpos,
+                                                           start_index,
+                                                           end_index);
 }
 
 //function that return the delayed index for the current index of the AUX outpos
 int Loop::get_delayed_index_from_aux_current_index (int index)
 {
+    /*
     int delay_outpos;
     int index_offset = index - delay_offset_in_aux_outpos;
     
     if (index_offset < aux_start_index) {
         int offset_to_start = aux_start_index - index_offset;
         delay_outpos = aux_end_index - offset_to_start;
+    } else
+        delay_outpos = index_offset;
+    return delay_outpos;
+     */
+    return get_delayed_index_based_on_offset_start_and_end(index,
+                                                           delay_offset_in_aux_outpos,
+                                                           aux_start_index,
+                                                           aux_end_index);
+}
+
+int Loop::get_delayed_index_based_on_offset_start_and_end (int index, int delay_offset, int start_pos, int end_pos) {
+    int delay_outpos;
+    int index_offset = index - delay_offset;
+    
+    if (index_offset < start_pos) {
+        int offset_to_start = start_pos - index_offset;
+        delay_outpos = end_pos - offset_to_start;
     } else
         delay_outpos = index_offset;
     return delay_outpos;

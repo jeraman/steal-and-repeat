@@ -10,11 +10,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "src/loop.cpp"
-            timestampString = "529450524.514311"
+            timestampString = "529512194.104472"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "265"
-            endingLineNumber = "265"
+            startingLineNumber = "289"
+            endingLineNumber = "289"
             landmarkName = "Loop::update_feedback_in_subpart_of_the_sample(int index)"
             landmarkType = "5">
          </BreakpointContent>

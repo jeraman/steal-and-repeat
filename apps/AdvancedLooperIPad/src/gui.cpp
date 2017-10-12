@@ -37,7 +37,6 @@ void Gui::draw(Loop* first)
     
     drawBackground(first->is_recording());
     drawFirstLoop(first);
-    drawDelayedFirstLoop(first);
     drawHead(first);
     drawAuxHead(first);
     drawMic();
@@ -72,60 +71,62 @@ void Gui::drawFirstLoop(Loop* first)
         return;
     
     //start drawing first waveform
-    ofSetColor(30);
     ofSetLineWidth(4);
     
     //iterates over the screenpixels
-    for (int i = 0; i < ofGetWidth(); i++)
+    for (int i = 0; i < ofGetWidth(); i++) {
+        drawDelayedLoopPartAtindex(first, i);
         drawLoopPartAtindex(first, i);
+    }
 }
 
 
 //--------------------------------------------------------------
 void Gui::drawLoopPartAtindex(Loop* first, int index)
 {
-    float posy     = ofGetHeight()/2.0;
-    int   loopsize = first->sample.size();
-    
-    //mapping the screen width to the position in the array
-    int convWidthToSamples = (int)((index/(float)ofGetWidth())*loopsize);
-    
-    //drawing the corresponding rectangle
-    float sizey = 4*ofMap(abs(first->sample[convWidthToSamples]), -1, 1, -posy, posy);
-    
-    float final_scale = sizey*scale_whole_loop;
+    float indexValue = getValueOfMappedIndex(first, index);
+    float valueWithVolume = indexValue * scale_whole_loop;
     
     if (there_is_an_window() && isIndexWithinMainWindowRange(index))
-        final_scale = computeScalePerWindowType(index,
-                                                  sizey,
+        valueWithVolume = indexValue * computeScalePerWindowType(index,
                                                   position_window1_start,
                                                   position_window1_end,
                                                   scale_window1_start,
                                                   scale_window1_end);
     
     if (there_is_an_aux_window && isIndexWithinAuxWindowRange(index))
-        final_scale = computeScalePerWindowType(index,
-                                                  sizey,
+        valueWithVolume = indexValue * computeScalePerWindowType(index,
                                                   position_window2_start,
                                                   position_window2_end,
                                                   scale_window2_start,
                                                   scale_window2_end);
     
-    ofDrawRectangle(index,posy,1, final_scale);
-    ofDrawRectangle(index,posy,1,-final_scale);
+    float middle = getMiddleScreenHeight();
+    
+    ofSetColor(30);
+    ofDrawRectangle(index,middle,1, valueWithVolume);
+    ofDrawRectangle(index,middle,1,-valueWithVolume);
 }
-
 
 //--------------------------------------------------------------
-float  Gui::computeScalePerWindowType(int index, int sizey, int pos_window_start, int pos_window_ends, int scale_window_start, int scale_window_ends)
+float  Gui::getValueOfMappedIndex(Loop* first, int index)
 {
-    float normalized_head_pos = (index-pos_window_start)/(float)(pos_window_ends-pos_window_start);
-    float current_scale = scale_window_start*(1-normalized_head_pos) + scale_window_ends*(normalized_head_pos);
-    current_scale = (1-(current_scale/ ofGetHeight()))*2;
-        
-    return (sizey * current_scale);
+    float middle = getMiddleScreenHeight();
+    int loopsize = first->sample.size();
+    
+    //mapping the screen width to the position in the array
+    int convWidthToSamples = (int)((index/(float)ofGetWidth()) * loopsize);
+    
+    //drawing the corresponding rectangle
+    float value = 4*ofMap(abs(first->sample[convWidthToSamples]), -1, 1, -middle, middle);
+    
+    return value;
 }
 
+//--------------------------------------------------------------
+float Gui::getMiddleScreenHeight() {
+    return (ofGetHeight()/2.0);
+}
 
 //--------------------------------------------------------------
 bool Gui::isIndexWithinMainWindowRange(int index)
@@ -140,13 +141,65 @@ bool Gui::isIndexWithinAuxWindowRange(int index)
     return (index > position_window2_start && index < position_window2_end);
 }
 
+//--------------------------------------------------------------
+float  Gui::computeScalePerWindowType(int index, int pos_window_start, int pos_window_ends, int scale_window_start, int scale_window_ends)
+{
+    float normalized_head_pos = (index-pos_window_start)/(float)(pos_window_ends-pos_window_start);
+    float current_scale = scale_window_start*(1-normalized_head_pos) + scale_window_ends*(normalized_head_pos);
+    current_scale = (1-(current_scale/ ofGetHeight()))*2;
+    return current_scale;
+}
+
+
 
 //--------------------------------------------------------------
-//draws the first loop
-void Gui::drawDelayedFirstLoop(Loop* first)
+//@TODO this function is slowing the app down!
+void Gui::drawDelayedLoopPartAtindex(Loop* first, int index)
 {
+    float indexValue = getValueOfMappedDelayedIndex(first, index);
+    float delayedVolume = indexValue * scale_whole_loop;
     
+    
+    if (there_is_an_window() && isIndexWithinMainWindowRange(index))
+        delayedVolume = indexValue * computeScalePerWindowType(index,
+                                                                 position_window1_start,
+                                                                 position_window1_end,
+                                                                 scale_window1_start,
+                                                                 scale_window1_end);
+    
+    if (there_is_an_aux_window && isIndexWithinAuxWindowRange(index))
+        delayedVolume = indexValue * computeScalePerWindowType(index,
+                                                                 position_window2_start,
+                                                                 position_window2_end,
+                                                                 scale_window2_start,
+                                                                 scale_window2_end);
+    
+    float middle = getMiddleScreenHeight();
+    
+    ofSetColor(200);
+    
+    //@TODO in particular, these drawing are slowing the app down!
+    ofDrawRectangle(index,middle,1, delayedVolume);
+    ofDrawRectangle(index,middle,1,-delayedVolume);
 }
+
+//--------------------------------------------------------------
+float  Gui::getValueOfMappedDelayedIndex(Loop* first, int index)
+{
+    float middle = getMiddleScreenHeight();
+    int loopsize = first->sample.size();
+    
+    //mapping the screen width to the position in the array
+    int convWidthToSamples = (int)((index/(float)ofGetWidth()) * loopsize);
+    
+    int delayedIndex = first->get_delayed_index_from_main_current_index(convWidthToSamples);
+    
+    //drawing the corresponding rectangle
+    float value = 4*ofMap(abs(first->sample[delayedIndex]), -1, 1, -middle, middle);
+    
+    return value;
+}
+
 
 //--------------------------------------------------------------
 void Gui::drawHead(Loop* first)

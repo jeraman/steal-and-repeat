@@ -27,7 +27,6 @@ public:
     void draw(Loop*);   //drawclass for visual feedback
     void drawBackground(bool);                            //draws the background
     void drawFirstLoop(Loop*);                            //draws the first loop
-    void drawDelayedFirstLoop(Loop*);                     //draws the first loop when delayed
     void drawHead(Loop*);                                 //draws the head of the looper
     void drawAuxHead(Loop*);                              //draws the head of the looper
     void drawMic();                                       //draws the input mic in realtime
@@ -58,9 +57,15 @@ private:
     vector <float> rightMic; //stores the right channel of live mic
     
     void  drawLoopPartAtindex(Loop*, int);
-    float computeScalePerWindowType(int, int, int, int, int, int);
+    void  drawDelayedLoopPartAtindex(Loop*, int);         
+    float computeScalePerWindowType(int, int, int, int, int);
+    float getValueOfMappedIndex(Loop*, int);
+    float getValueOfMappedDelayedIndex(Loop*, int);
+    float getMiddleScreenHeight();
     bool  isIndexWithinMainWindowRange(int);
     bool  isIndexWithinAuxWindowRange(int);
+    int   fromScreenWidthToSamples (Loop*, int);
+
 };
 
 #endif /* gui_h */

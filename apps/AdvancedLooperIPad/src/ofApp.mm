@@ -26,6 +26,9 @@ void ofApp::setup(){
     //seting up state machine
     sm.setup();
     
+    //setting up midi
+    midi.setup();
+    
     //print debug info
     if (debug)
         NSLog(@"end of setup\n");
@@ -72,11 +75,12 @@ void ofApp::draw(){
     
     sm.draw();
     input.draw();
+    midi.drawDebug();
 }
 
 //--------------------------------------------------------------
 void ofApp::exit(){
-
+    midi.exit();
 }
 
 //--------------------------------------------------------------
@@ -99,6 +103,7 @@ void ofApp::set_debug(bool debug)
     this->debug=debug;
     sm.set_debug(debug);
     input.set_debug(debug);
+    midi.setDebug(debug);
 }
 
 /**********************************************

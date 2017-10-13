@@ -389,7 +389,7 @@ void Loop::process_output_buffer_at_one_index(float* &output, int i) {
     int output_buf_index = (outpos + index)%output_buf.size();
     
     //gets the delayed index
-    int delayed_index = get_delayed_index_from_main_current_index(outpos+index);
+    int delayed_index = get_delayed_index_from_main_current_index(outpos+index)%output_buf.size();
     
     //computes the current volume
     float current_volume = interpolate_volume(output_buf_index);

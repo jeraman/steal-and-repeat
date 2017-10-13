@@ -4,6 +4,7 @@
 #include "ipad_keyboard.h"
 #include "input_interface.h"
 #include "state_machine.h"
+#include "midiHandler.h"
 
 class ofApp : public ofxiOSApp {
 	
@@ -36,6 +37,8 @@ class ofApp : public ofxiOSApp {
         Input_Interface input;
         State_Machine   sm;
         ofSoundStream   soundStream;
+        midiHandler     midi;
+    
         bool            debug;
         vector<Touch>   touches;
 

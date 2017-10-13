@@ -160,6 +160,9 @@ float  Gui::computeScalePerWindowType(int index, int pos_window_start, int pos_w
 //@TODO this function is slowing the app down!
 void Gui::drawDelayedLoopPartAtindex(Loop* first, int index)
 {
+    if (first->delay ==0 || first->delay == 1)
+        return;
+        
     float indexValue = getValueOfMappedDelayedIndex(first, index);
     float delayedVolume = indexValue * scale_whole_loop;
     
@@ -182,7 +185,8 @@ void Gui::drawDelayedLoopPartAtindex(Loop* first, int index)
     
     ofSetColor(200);
     
-    //@TODO in particular, these drawing are slowing the app down!
+    //the folloing functions slow the app down!
+    //@TODO these two could become one!
     ofDrawRectangle(index,middle,2, delayedVolume);
     ofDrawRectangle(index,middle,2,-delayedVolume);
 }
@@ -359,12 +363,12 @@ void Gui::drawDebug(Loop* first)
         string delay("DELAY: ");
         ofDrawBitmapString(delay +
                            ofToString(first->delay) +
-                           ofToString(" â€” ") +
+                           ofToString(" â   ") +
                            ofToString(first->delay_offset_in_main_outpos) +
                            ofToString(" samples")
                            , ofPoint(20, 110));
         
-        ofDrawBitmapString(ofToString("outpos: ") +
+        ofDrawBitmapString(ofToString("OUTPOS: ") +
                            ofToString(first->outpos) +
                            ofToString("   delayed_outpos: ") +
                            ofToString(first->get_delayed_index_from_main_current_index(first->outpos)) +
@@ -372,8 +376,7 @@ void Gui::drawDebug(Loop* first)
                            ofToString(first->start_index) +
                            ofToString("   end_index: ") +
                            ofToString(first->end_index)
-                           , ofPoint(20, 150));
-        
+                           , ofPoint(20, 140));
     }
 }
 

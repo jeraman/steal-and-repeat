@@ -74,7 +74,7 @@ void Gui::drawFirstLoop(Loop* first)
     ofSetLineWidth(4);
     
     //iterates over the screenpixels
-    for (int i = 0; i < ofGetWidth(); i++) {
+    for (int i = 0; i < ofGetWidth(); i=i+2) {
         drawDelayedLoopPartAtindex(first, i);
         drawLoopPartAtindex(first, i);
     }
@@ -103,9 +103,13 @@ void Gui::drawLoopPartAtindex(Loop* first, int index)
     
     float middle = getMiddleScreenHeight();
     
+    //ofSetColor(200);
+    //ofDrawRectangle(index,middle-50, 2, valueWithVolume);
+    //ofDrawRectangle(index,middle-50,1,-valueWithVolume);
+    
     ofSetColor(30);
-    ofDrawRectangle(index,middle,1, valueWithVolume);
-    ofDrawRectangle(index,middle,1,-valueWithVolume);
+    ofDrawRectangle(index,middle, 2, valueWithVolume);
+    ofDrawRectangle(index,middle, 2,-valueWithVolume);
 }
 
 //--------------------------------------------------------------
@@ -179,8 +183,8 @@ void Gui::drawDelayedLoopPartAtindex(Loop* first, int index)
     ofSetColor(200);
     
     //@TODO in particular, these drawing are slowing the app down!
-    ofDrawRectangle(index,middle,1, delayedVolume);
-    ofDrawRectangle(index,middle,1,-delayedVolume);
+    ofDrawRectangle(index,middle,2, delayedVolume);
+    ofDrawRectangle(index,middle,2,-delayedVolume);
 }
 
 //--------------------------------------------------------------

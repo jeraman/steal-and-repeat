@@ -33,14 +33,15 @@ public:
     // midi device (dis)connection event callbacks
     void midiInputAdded(string name, bool isNetwork);
     void midiInputRemoved(string name, bool isNetwork);
+    void midiOutputAdded(string nam, bool isNetwork);
+    void midiOutputRemoved(string name, bool isNetwork);
     
     vector<ofxMidiIn*> inputs;
     ofxMidiMessage lastMessage;
     ofMutex messageMutex;
     bool    debug;
-    //vector<ofxMidiOut*> outputs;
-    //void midiOutputAdded(string nam, bool isNetwork);
-    //void midiOutputRemoved(string name, bool isNetwork);
+    
+    vector<ofxMidiOut*> outputs;
     //void addMessage(string msg);
     //stringstream formatString();
     //deque<string> messages;

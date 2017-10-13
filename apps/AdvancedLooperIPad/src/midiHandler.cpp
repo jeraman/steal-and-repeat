@@ -110,3 +110,34 @@ void midiHandler::midiInputRemoved(string name, bool isNetwork)
         }
     }
 }
+
+//--------------------------------------------------------------
+void midiHandler::midiOutputAdded(string name, bool isNetwork) {
+    stringstream msg;
+    msg << "ofxMidi: output added: " << name << " network: " << isNetwork << endl;
+    //addMessage(msg.str());
+    
+    // create and open new output port
+    ofxMidiOut *newOutput = new ofxMidiOut;
+    newOutput->openPort(name);
+    outputs.push_back(newOutput);
+}
+
+//--------------------------------------------------------------
+void midiHandler::midiOutputRemoved(string name, bool isNetwork) {
+    stringstream msg;
+    msg << "ofxMidi: output removed: " << name << " network: " << isNetwork << endl;
+    //addMessage(msg.str());
+    
+    // close and remove output port
+    vector<ofxMidiOut*>::iterator iter;
+    for(iter = outputs.begin(); iter != outputs.end(); ++iter) {
+        ofxMidiOut *output = (*iter);
+        if(output->getName() == name) {
+            output->closePort();
+            delete output;
+            outputs.erase(iter);
+            break;
+        }
+    }
+}

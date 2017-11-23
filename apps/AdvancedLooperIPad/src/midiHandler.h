@@ -36,6 +36,11 @@ public:
     void midiOutputAdded(string nam, bool isNetwork);
     void midiOutputRemoved(string name, bool isNetwork);
     
+    void isRecordEvent(ofxMidiMessage& msg);
+    void isFeedbackEvent(ofxMidiMessage& msg);
+    void isDelayEvent(ofxMidiMessage& msg);
+    
+    
     vector<ofxMidiIn*> inputs;
     ofxMidiMessage lastMessage;
     ofMutex messageMutex;

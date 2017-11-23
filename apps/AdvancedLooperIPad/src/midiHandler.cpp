@@ -56,7 +56,11 @@ void midiHandler::drawDebug()
     if (debug) {
         ofSetColor(200);
         ofDrawBitmapString(ofToString("LAST MIDI: ") +
-                           ofToString(lastMessage.toString())
+                           ofToString(" control: ") + ofToString(lastMessage.control) +
+                           ofToString(" value: ") + ofToString(lastMessage.value) +
+                           ofToString(" channel: ") + ofToString(lastMessage.channel) +
+                           ofToString(" pitch: ") + ofToString(lastMessage.pitch) +
+                           ofToString(" velocity: ") + ofToString(lastMessage.velocity)
                            , ofPoint(20, 170));
     }
 

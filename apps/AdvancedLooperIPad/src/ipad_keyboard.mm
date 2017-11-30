@@ -15,7 +15,6 @@ Ipad_Keyboard::Ipad_Keyboard(bool debugMode){
     keyboard->setBgColor(255, 255, 255, 255);
     keyboard->setFontColor(0,0,0, 255);
     keyboard->setFontSize(26);
-    //keyboard->setVisible(false);
     
     lastTextFieldSize = 0;
     
@@ -23,6 +22,8 @@ Ipad_Keyboard::Ipad_Keyboard(bool debugMode){
     
     if (debug)
         NSLog(@"setting up keyboard\n");
+    
+    show();
 }
 
 //--------------------------------------------------------------
@@ -31,14 +32,25 @@ Ipad_Keyboard::~Ipad_Keyboard(){
 }
 
 //--------------------------------------------------------------
-void Ipad_Keyboard::setDebugMode(bool debug){
+void Ipad_Keyboard::setDebug(bool debug){
     this->debug = debug;
 }
 
 //--------------------------------------------------------------
-char Ipad_Keyboard::getKeyPressed(){
+void Ipad_Keyboard::hide(){
+    keyboard->setVisible(false);
+}
+
+//--------------------------------------------------------------
+void Ipad_Keyboard::show(){
     keyboard->setVisible(true);
-    keyboard->openKeyboard();         
+    keyboard->openKeyboard();
+}
+
+//--------------------------------------------------------------
+char Ipad_Keyboard::getKeyPressed(){
+    //keyboard->setVisible(true);
+   // keyboard->openKeyboard();
     string text = keyboard->getText();
     char result = -1;
     

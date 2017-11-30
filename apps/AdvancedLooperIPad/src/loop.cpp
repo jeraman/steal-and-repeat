@@ -71,6 +71,7 @@ void Loop::setup() {
 
 void Loop::stop()
 {
+    //cancel_recording_or_overdubing();
     playing = false;
     outpos = 0;
 }
@@ -89,6 +90,13 @@ void Loop::overdub()
         update_output_buffer();
     
     overdubbing = !overdubbing;
+}
+
+void Loop::cancel_recording_or_overdubing() {
+    if (recording)   recording   = false;
+    if (overdubbing) overdubbing = false;
+    
+    //input_buf.
 }
 
 

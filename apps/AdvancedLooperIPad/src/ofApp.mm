@@ -5,9 +5,6 @@ bool finished_setup = false;
 //--------------------------------------------------------------
 void ofApp::setup(){
     
-    //seting debug
-    set_debug(true);
-    
     //setting the framerate
     ofSetFrameRate(60);
     
@@ -28,6 +25,11 @@ void ofApp::setup(){
     
     //setting up midi
     midi.setup();
+    
+    locksFromSpleep();
+    
+    //seting debug
+    set_debug(true);
     
     //print debug info
     if (debug)
@@ -64,7 +66,8 @@ void ofApp::setup_sound(){
 void ofApp::update(){
     if (!finished_setup) return;
     
-    update_keys();
+    updateKeys();
+    updateMIDI();
     input.set_fingers(touches);
     sm.update(input);
 }
@@ -73,15 +76,21 @@ void ofApp::update(){
 void ofApp::draw(){
     if (!finished_setup) return;
     
+    ofSetColor(200);
+    string fps("FPS: ");
+    ofDrawBitmapString(fps + ofToString(ofGetFrameRate()), 20, 20);
+    
     sm.draw();
     input.draw();
-    midi.drawDebug();
+    //midi.drawDebug();
 }
 
 //--------------------------------------------------------------
 void ofApp::exit(){
     midi.exit();
 }
+
+
 
 //--------------------------------------------------------------
 void ofApp::audioIn(float * input, int bufferSize, int nChannels) {
@@ -98,21 +107,66 @@ void ofApp::audioOut(float * output, int bufferSize, int nChannels) {
     sm.audioOut(output, bufferSize, nChannels);
 }
 
-void ofApp::set_debug(bool debug)
-{
+//--------------------------------------------------------------
+void ofApp::set_debug(bool debug) {
     this->debug=debug;
     sm.set_debug(debug);
     input.set_debug(debug);
     midi.setDebug(debug);
+    ipad_keyboard->setDebug(debug);
+}
+
+bool paused = false;
+
+
+//--------------------------------------------------------------
+void ofApp::updateMIDI() {
+    
+    if(!midi.thereIsLastMessage()) return;
+    
+    //gets what text has the user typed
+    ofxMidiMessage msg = midi.getLastMessage();
+    
+    //feedback
+    if (msg.channel == 1)
+        sm.set_feedback(msg.pitch/127.0);
+    
+    //phasing
+    if (msg.channel == 2)
+        sm.set_delay(msg.pitch/127.0);
+    
+    //one press
+    if (msg.channel == 3) {
+        if (sm.is_loop_empty())
+            sm.record();
+        else
+            sm.overdub();
+    }
+    
+    //two press
+    if (msg.channel == 4) {
+        paused = !paused;
+        sm.cancel_recording_or_overdubing();
+        if (paused)
+            sm.stop();
+        else
+            sm.resume();
+    }
+    
+    //press and hold
+    if (msg.channel == 5)
+        sm.clear_loops();
+    
+    midi.clearLastMessage();    
 }
 
 /**********************************************
  * functions defined for the iOS platform
  **********************************************/
 
-bool paused = false;
 
-void ofApp::update_keys() {
+
+void ofApp::updateKeys() {
     
     //gets what text has the user typed
     char key = ipad_keyboard->getKeyPressed();
@@ -142,21 +196,21 @@ void ofApp::update_keys() {
             sm.resume();
     }
     
-    if (key=='a' || key=='A') {
+    if (key=='a' || key=='A')
         sm.set_feedback(sm.get_feedback()-0.05);
-    }
     
-    if (key=='s' || key=='S') {
+    
+    if (key=='s' || key=='S')
         sm.set_feedback(sm.get_feedback()+0.05);
-    }
     
-    if (key=='q' || key=='Q') {
+    
+    if (key=='q' || key=='Q')
         sm.set_delay(sm.get_delay()-0.05);
-    }
     
-    if (key=='w' || key=='W') {
+    
+    if (key=='w' || key=='W')
         sm.set_delay(sm.get_delay()+0.05);
-    }
+    
 }
 
 //--------------------------------------------------------------
@@ -220,6 +274,13 @@ void ofApp::gotFocus(){
 void ofApp::gotMemoryWarning(){
 
 }
+
+
+//--------------------------------------------------------------
+void ofApp::locksFromSpleep(){
+    [[UIApplication sharedApplication] setIdleTimerDisabled:YES];
+}
+
 
 //--------------------------------------------------------------
 void ofApp::deviceOrientationChanged(int newOrientation){

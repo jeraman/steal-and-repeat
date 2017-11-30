@@ -28,6 +28,7 @@ class Loop
         void stop ();                                 //stops this sample
         void resume ();                               //resumes the sample if stopped
         void clear ();                                //cleans the loop
+        void cancel_recording_or_overdubing();          //stop record or overdubing wihtout saving the current input buffer
         void set_volume (float);                      //sets the volume
         void set_aux_volume (float);                  //sets the aux volume
         void set_debug (bool);                        //debug control

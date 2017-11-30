@@ -24,7 +24,7 @@ class midiHandler : public ofxMidiListener, public ofxMidiConnectionListener {
 public:
     void setup();
     void exit();
-    void drawDebug();
+    //void drawDebug();
     void setDebug(bool);
     
     // midi message callback
@@ -36,10 +36,13 @@ public:
     void midiOutputAdded(string nam, bool isNetwork);
     void midiOutputRemoved(string name, bool isNetwork);
     
-    void isRecordEvent(ofxMidiMessage& msg);
-    void isFeedbackEvent(ofxMidiMessage& msg);
-    void isDelayEvent(ofxMidiMessage& msg);
+    //void isRecordEvent(ofxMidiMessage& msg);
+    //void isFeedbackEvent(ofxMidiMessage& msg);
+    //void isDelayEvent(ofxMidiMessage& msg);
     
+    void clearLastMessage();
+    bool thereIsLastMessage();
+    ofxMidiMessage getLastMessage();
     
     vector<ofxMidiIn*> inputs;
     ofxMidiMessage lastMessage;

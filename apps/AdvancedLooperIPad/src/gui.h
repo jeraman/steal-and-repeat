@@ -35,6 +35,7 @@ public:
     
     void init_mic_buffer(int);
     void update_mic_buffer(float *, int, int);
+    void set_headWidth(float);
     void set_debug(bool);                                 //debug control
     void set_scale(float);
     void set_window_with_scale(int, int, int, int);
@@ -52,6 +53,7 @@ private:
     float scale_window2_start, scale_window2_end;
     int   position_window1_start, position_window1_end;
     int   position_window2_start, position_window2_end;
+    float headWidth;
     
     vector <float> leftMic;  //stores the left channel of live mic
     vector <float> rightMic; //stores the right channel of live mic

@@ -24,7 +24,9 @@ public:
     
     //functions
     char getKeyPressed();
-    void setDebugMode(bool);
+    void setDebug(bool);
+    void hide();
+    void show();
     
     //variables
     ofxiOSKeyboard* keyboard;

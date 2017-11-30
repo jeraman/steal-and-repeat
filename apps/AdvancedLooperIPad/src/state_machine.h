@@ -43,6 +43,7 @@ public:
     void stop();
     void resume();
     void clear_loops();
+    void cancel_recording_or_overdubing();
     bool is_loop_empty();
     void set_feedback(float);
     void set_delay(float);

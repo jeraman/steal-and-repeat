@@ -23,9 +23,11 @@ class ofApp : public ofxiOSApp {
         void lostFocus();
         void gotFocus();
         void gotMemoryWarning();
+        void locksFromSpleep();
         void deviceOrientationChanged(int newOrientation);
     
-        void update_keys();
+        void updateKeys();
+        void updateMIDI();
         void setup_sound();
         void set_debug(bool);
     

@@ -16,6 +16,7 @@ Gui::Gui()
     position_window1_start = -1, position_window1_end=-1;
     scale_window1_start = 1, scale_window1_end = 1;
     scale_window2_start = 1, scale_window2_end = 1;
+    headWidth = 1;
 }
 
 //--------------------------------------------------------------
@@ -225,7 +226,7 @@ void Gui::drawHead(Loop* first)
     
     //start drawing first waveform
     ofSetColor(100);
-    ofSetLineWidth(20);
+    ofSetLineWidth((int)20*headWidth);
     
     //gets the correspond position of the index of the loop and the screen width
     float posx = ofMap(first->outpos, 0, loopsize, 0, ofGetWidth());
@@ -251,7 +252,7 @@ void Gui::drawAuxHead(Loop* first)
     
     //start drawing first waveform
     ofSetColor(100);
-    ofSetLineWidth(20);
+    ofSetLineWidth((int)20*headWidth);
     
     //gets the correspond position of the index of the loop and the screen width
     float posx = ofMap(first->aux_outpos, 0, loopsize, 0, ofGetWidth());
@@ -412,6 +413,12 @@ void Gui::update_mic_buffer(float * input, int bufferSize, int nChannels)
 bool Gui::there_is_an_window()
 {
     return (position_window1_start != -1 && position_window1_end!=-1);
+}
+
+//--------------------------------------------------------------
+void Gui::set_headWidth(float newHeadWidth)
+{
+    this->headWidth = 1-newHeadWidth;
 }
 
 //--------------------------------------------------------------

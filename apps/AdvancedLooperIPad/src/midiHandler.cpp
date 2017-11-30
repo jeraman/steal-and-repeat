@@ -30,6 +30,8 @@ void midiHandler::setup()
         inputs[i]->openPort(i);
     }
     
+    lastMessage.clear();
+    
     // set this class to receieve midi device (dis)connection events
     ofxMidi::setConnectionListener(this);
 }
@@ -50,6 +52,7 @@ void midiHandler::setDebug(bool debug)
     this->debug=debug;
 }
 
+/*
 //--------------------------------------------------------------
 void midiHandler::drawDebug()
 {
@@ -63,19 +66,23 @@ void midiHandler::drawDebug()
                            ofToString(" velocity: ") + ofToString(lastMessage.velocity)
                            , ofPoint(20, 170));
     }
-
 }
+ */
 
 //--------------------------------------------------------------
 void midiHandler::newMidiMessage(ofxMidiMessage& msg)
 {
     messageMutex.lock();
     //addMessage(msg.toString());
-    //cout << msg.channel <<endl;
-    //cout << msg.control <<endl;
-    //cout << msg.value <<endl;
-    //cout << msg.pitch <<endl;
-    //cout << msg.velocity <<endl;
+    
+    if (debug) {
+    cout << "[MIDI] channel: " << msg.channel
+         << " control: "<< msg.control
+         << " value: "<< msg.value
+         << " pitch: "<< msg.pitch
+         << " velocity: "<< msg.velocity <<endl;
+    }
+    
     lastMessage = msg;
     messageMutex.unlock();
 }
@@ -144,4 +151,25 @@ void midiHandler::midiOutputRemoved(string name, bool isNetwork) {
             break;
         }
     }
+}
+
+//--------------------------------------------------------------
+void midiHandler::clearLastMessage()
+{
+    this->lastMessage.clear();
+}
+
+//--------------------------------------------------------------
+bool midiHandler::thereIsLastMessage()
+{
+    if (&lastMessage)
+        return true;
+    else
+        return false;
+}
+
+
+//--------------------------------------------------------------
+ofxMidiMessage midiHandler::getLastMessage() {
+    return lastMessage;
 }

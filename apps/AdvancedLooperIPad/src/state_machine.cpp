@@ -427,7 +427,6 @@ void State_Machine::audioOut(float * output, int bufferSize, int nChannels) {
 void State_Machine::set_debug(bool debug) {
     this->debug=debug;
     gui.set_debug(debug);
-    //inter.set_debug(debug);
     loop.set_debug(debug);
 }
 
@@ -444,6 +443,11 @@ void State_Machine::overdub() {
 //--------------------------------------------------------------
 void State_Machine::stop() {
     loop.stop();
+}
+
+//--------------------------------------------------------------
+void State_Machine::cancel_recording_or_overdubing() {
+    loop.cancel_recording_or_overdubing();
 }
 
 //--------------------------------------------------------------
@@ -465,6 +469,7 @@ bool State_Machine::is_loop_empty() {
 //--------------------------------------------------------------
 void State_Machine::set_feedback(float value) {
     loop.set_feedback(value);
+    gui.set_headWidth(value);
 }
 
 //--------------------------------------------------------------

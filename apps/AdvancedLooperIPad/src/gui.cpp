@@ -226,13 +226,22 @@ void Gui::drawHead(Loop* first)
     
     //start drawing first waveform
     ofSetColor(100);
-    ofSetLineWidth((int)20*headWidth);
+    //ofSetLineWidth((int)20*headWidth);
     
     //gets the correspond position of the index of the loop and the screen width
     float posx = ofMap(first->outpos, 0, loopsize, 0, ofGetWidth());
     //computing the y size of each rectangle
     
-    ofDrawLine(posx,0,posx,ofGetHeight());
+    int width = (10 + (30*headWidth));
+    
+    //int beg = posx - width;
+    //int end = posx + width;
+    
+    //if (beg < 0)             beg = 0;
+    //if (end > ofGetWidth())  end = ofGetWidth();
+        
+    //ofDrawLine(posx,0,posx,ofGetHeight());
+    ofDrawRectangle(posx-(width/2), 0, width, ofGetHeight());
     
 }
 

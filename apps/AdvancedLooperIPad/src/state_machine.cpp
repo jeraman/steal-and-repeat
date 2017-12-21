@@ -27,13 +27,12 @@ State_Machine::~State_Machine() {
 
 //--------------------------------------------------------------
 void State_Machine::setup() {
-    //initializing the loop
     loop.setup();
     
-    //setting up buffers that will store the lic mic input
     gui.init_mic_buffer(loop.bufferSize);
 
-    //setting debug to false
+    looper_control_state = EMPTY;
+    
     set_debug(true);
 }
 
@@ -42,18 +41,18 @@ void State_Machine::setup() {
 void State_Machine::update(Input_Interface inter) {
     
     //if there are no loops, don't even bother processing the rest
-    if (loop.is_empty())
+    if (looper_control_state == EMPTY)
         return;
     
     //gets the input_interface current state
-    state = inter.get_state();
+    touch_state = inter.get_state();
     fingers = inter.get_fingers();
     
     //verifies if this is the first time the current state is accessed
-    bool is_first_time_state_is_accessed = (last_state != state);
+    bool is_first_time_state_is_accessed = (last_touch_state != touch_state);
     
     //case-by-case analysis
-    switch(state) {
+    switch(touch_state) {
         case NONE: //no fingers in the screen
             update_NONE(is_first_time_state_is_accessed);
             break;
@@ -73,8 +72,10 @@ void State_Machine::update(Input_Interface inter) {
     
     loop.compute_delay_offset();
     
+    stop_if_feedback_has_cleaned_audio();
+    
     //updates last state
-    last_state = state;
+    last_touch_state = touch_state;
 }
 
 void State_Machine::check_if_volume_has_changed_to_one_and_update_gui() {
@@ -403,13 +404,120 @@ void State_Machine::update_FOUR_FINGERS(bool is_first_time_state_is_accessed) {
     }
 }
 
+//--------------------------------------------------------------
+void State_Machine::process_MIDI_events(ofxMidiMessage msg) {
+    
+    //feedback
+    if (msg.channel == 1)
+        set_feedback(msg.pitch/127.0);
+    
+    //phasing
+    if (msg.channel == 2)
+        set_delay(msg.pitch/127.0);
+    
+    //one press
+    if (msg.channel == 3)
+        update_pressed_once();
+    
+    //two press
+    if (msg.channel == 4)
+        update_pressed_twice();
+    
+    //press and hold
+    if (msg.channel == 5)
+        update_press_and_hold();
+}
+
+
+//--------------------------------------------------------------
+void State_Machine::update_pressed_once() {
+    
+    if (looper_control_state == EMPTY)
+        record();
+    
+    else if (looper_control_state == PLAY)
+        overdub();
+    
+    else if (looper_control_state == STOP)
+        resume();
+    
+    else if (looper_control_state == RECORD)
+    {
+        stop_record();
+        resume();
+    }
+    
+    else if (looper_control_state == OVERDUB)
+    {
+        stop_overdub();
+        resume();
+    }
+    
+    
+}
+
+//--------------------------------------------------------------
+void State_Machine::update_pressed_twice() {
+    //it was actually PLAY, but became OVERDUB as soon as the button is pressed for the first time
+    if (looper_control_state == OVERDUB) {
+        cancel_recording_or_overdubing();
+        stop();
+    }
+    
+    //if other states, this event should act exactly like a regular key press
+    
+    else if (looper_control_state == PLAY)
+        overdub();
+    
+    else if (looper_control_state == STOP)
+        resume();
+    
+    else if (looper_control_state == RECORD)
+    {
+        stop_record();
+        resume();
+    }
+}
+
+//--------------------------------------------------------------
+void State_Machine::update_press_and_hold() {
+    //it was actually STOP, but became PLAY as soon as the button is pressed for the first time
+    if (looper_control_state == STOP)
+        clear_loops();
+    else if (looper_control_state == RECORD) {
+        cancel_recording_or_overdubing();
+        clear_loops();
+    }
+    else if (looper_control_state == OVERDUB) {
+        cancel_recording_or_overdubing();
+        resume();
+    }
+    else if (looper_control_state == PLAY)
+        undo_redo();
+}
 
 //--------------------------------------------------------------
 void State_Machine::draw() {
     gui.draw(&loop);
     //inter.draw();
+    
+    if (debug) {
+        ofSetColor(200);
+        string ls("LOOPER STATE: ");
+        ofDrawBitmapString(ls + ofToString(looper_control_state), 20, 160);
+    }
 }
 
+//--------------------------------------------------------------
+void State_Machine::stop_if_feedback_has_cleaned_audio() {
+    if (looper_control_state == PLAY && loop.head_has_restarted()) {
+        if (loop.output_is_silenced_and_screen_has_no_fingers())
+            clear_loops();
+        else
+            loop.initialize_sum_that_checks_if_output_is_silenced();
+    }
+        
+}
 
 //--------------------------------------------------------------
 void State_Machine::audioIn(float * input, int bufferSize, int nChannels) {
@@ -432,16 +540,29 @@ void State_Machine::set_debug(bool debug) {
 
 //--------------------------------------------------------------
 void State_Machine::record() {
+    looper_control_state = RECORD;
     loop.record();
 }
 
 //--------------------------------------------------------------
+void State_Machine::stop_record() {
+    loop.stop_record();
+}
+
+//--------------------------------------------------------------
 void State_Machine::overdub() {
+    looper_control_state = OVERDUB;
     loop.overdub();
 }
 
 //--------------------------------------------------------------
+void State_Machine::stop_overdub() {
+    loop.stop_overdub();
+}
+
+//--------------------------------------------------------------
 void State_Machine::stop() {
+    looper_control_state = STOP;
     loop.stop();
 }
 
@@ -452,17 +573,24 @@ void State_Machine::cancel_recording_or_overdubing() {
 
 //--------------------------------------------------------------
 void State_Machine::resume() {
+    looper_control_state = PLAY;
     loop.resume();
 }
 
 //--------------------------------------------------------------
 void State_Machine::clear_loops() {
+    looper_control_state = EMPTY;
     loop.clear();
     gui.set_scale(1);
 }
 
 //--------------------------------------------------------------
-bool State_Machine::is_loop_empty() {
+void State_Machine::undo_redo() {
+    loop.undo_redo();
+}
+
+//--------------------------------------------------------------
+bool State_Machine::is_loop_empty_in_data() {
     return loop.is_empty();
 }
 

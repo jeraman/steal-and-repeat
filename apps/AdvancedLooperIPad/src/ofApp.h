@@ -32,7 +32,7 @@ class ofApp : public ofxiOSApp {
         void set_debug(bool);
     
         void audioIn(float * input, int bufferSize, int nChannels);
-        void audioOut(float * input, int bufferSize, int nChannels);
+        void audioOut(float * output, int bufferSize, int nChannels);
     
     private:
         Ipad_Keyboard*  ipad_keyboard;

@@ -9,6 +9,7 @@
 #define SAMPLE_RATE	44100
 #define N_CHANNELS 1
 
+
 class Loop
 {
     public:
@@ -24,10 +25,13 @@ class Loop
         void play (float* &output);                   //plays the loop
         void overdub_sample_vector (float* &input);   //adds more audio info inside this loop
         void overdub();                               //sets the overdubbing boolean to true
-        void record ();                               //records and stops recording a loop
+        void stop_overdub ();                         //stops overdubbing a loop
+        void record ();                               //starts recording a loop
+        void stop_record ();                          //stops recording a loop
         void stop ();                                 //stops this sample
         void resume ();                               //resumes the sample if stopped
         void clear ();                                //cleans the loop
+        void undo_redo();                             //undo/redo last recording or overdubing;
         void cancel_recording_or_overdubing();          //stop record or overdubing wihtout saving the current input buffer
         void set_volume (float);                      //sets the volume
         void set_aux_volume (float);                  //sets the aux volume
@@ -48,20 +52,23 @@ class Loop
         void update_looping_area (int, int);
         void update_aux_looping_area (int, int);
         void update_head_position();                  //updates the head position
-        void update_feedback_in_subpart_of_the_sample(int index); //updates the level of feedback
+        void update_feedback_in_subpart_of_output_and_sample(int index); //updates the level of feedback
         void set_feedback(float);                     //sets the feedback to a new value
         void set_delay(float);                        //sets the feedback to a new value
         void compute_delay_offset();
         void compute_delay_offset_in_main_outpos();
         void compute_delay_offset_in_aux_outpos();
-        void initialize_sum_that_checks_if_sample_is_silenced();
-        void adds_to_sum_that_checks_if_sample_is_silenced(float);
-        void resets_sum_checker();
+        void initialize_sum_that_checks_if_output_is_silenced();
+        void adds_to_sum_that_checks_if_output_is_silenced(float);
+        //void resets_sum_checker();
         void process_output_buffer_in_a_loop(float* &output);
         void process_output_buffer_at_one_index(float* &output, int i);
         void mute_output_buffer(float* &output);
-        bool sample_is_silenced_and_screen_has_no_fingers();
-        bool is_sample_silenced();
+        void init_last_buffer();
+        void update_last_buffer();
+    
+        bool output_is_silenced_and_screen_has_no_fingers();
+        bool is_output_silenced();
         bool head_has_restarted();
         bool is_recording ();                          //returns if it's recording or not
         bool is_empty ();                              //if this loop is clear/empty or not
@@ -75,6 +82,7 @@ class Loop
         float interpolate_volume(int);                       //function that interpolates the volume depending on volume_start, volume_end, based on a certain index (int)
         float interpolate_aux_volume(int);                   //same thing, but for the aux
 
+    
     
         bool muted;          //to mute the loop
         bool overdubbing;    //indicates if this loop is currently overdubbing or not
@@ -103,7 +111,7 @@ class Loop
         float volume_start,     volume_end;     //stores the current volume for the start and the end
         float aux_volume_start, aux_volume_end; //stores the current volume for the start and the end for the aux
         float aux_volume;    //[AUX] stores the current volume
-        float sum_that_checks_if_sample_is_silenced;
+        float sum_that_checks_if_output_is_silenced;
     
         float feedback;      //stores the feedback value
         float delay;         //stores the amount of delay
@@ -111,6 +119,7 @@ class Loop
         vector<float> input_buf;        //stores the loop being currently recorded
         vector<float> output_buf;       //stores the loop that is being played
         vector<float> sample;           //stores the raw loop
+        vector<float> lastSample;           //stores the raw loop
     
         //unused variables
         float leftpan;       //stores the amount of left pan

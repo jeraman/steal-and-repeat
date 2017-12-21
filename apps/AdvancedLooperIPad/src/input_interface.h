@@ -13,7 +13,7 @@ typedef enum {
     TWO_FINGERS,
     THREE_FINGERS,
     FOUR_FINGERS
-} State;
+} TouchState;
 
 
 //a simple data structure for storing touch events
@@ -68,7 +68,7 @@ public:
     ~Input_Interface ();     //desctructor
     
     void          draw ();                     //drawclass for visual feedback
-    State         get_state ();                //update the input interface update machine
+    TouchState    get_state ();                //update the input interface update machine
     vector<Touch> get_fingers ();              //returns a vector with the current finger positions
     int           get_number_of_fingers();
     void          set_fingers (vector<Touch>&); //returns a vector with the current finger positions
@@ -76,9 +76,9 @@ public:
     void          set_debug (bool);            //debug control
     
 private:
-    bool  debug;
-    State state;
-    int   number_of_fingers;
+    bool       debug;
+    TouchState touch_state;
+    int        number_of_fingers;
     
     //ofxMultiTouchPad pad;
     vector<Touch> * touches;

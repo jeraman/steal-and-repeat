@@ -31,6 +31,7 @@ public:
     void drawAuxHead(Loop*);                              //draws the head of the looper
     void drawMic();                                       //draws the input mic in realtime
     void drawWindow(bool);                                //draws the window
+    void drawWhatHasBeenRecordedSoFar(Loop*);             //draws what has been recorded so far
     void drawDebug(Loop*);                                //draw debug info
     
     void init_mic_buffer(int);

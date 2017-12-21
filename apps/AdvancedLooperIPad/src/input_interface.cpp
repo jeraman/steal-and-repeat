@@ -5,7 +5,7 @@ Input_Interface::Input_Interface()
 {
     //pad = ofxMultiTouchPad();
     set_debug(false);
-    state = NONE;
+    touch_state = NONE;
     number_of_fingers = 0;
 }
 
@@ -35,30 +35,30 @@ void Input_Interface::set_number_of_fingers (int n)
     number_of_fingers = n;
 }
 
-State Input_Interface::get_state ()
+TouchState Input_Interface::get_state ()
 {
     int options = get_number_of_fingers();
     
     switch(options)
     {
         case 0:
-            state = NONE;
+            touch_state = NONE;
             break;
         case 1:
-            state = ONE_FINGER;
+            touch_state = ONE_FINGER;
             break;
         case 2:
-            state = TWO_FINGERS;
+            touch_state = TWO_FINGERS;
             break;
         case 3:
-            state = THREE_FINGERS;
+            touch_state = THREE_FINGERS;
             break;
         case 4:
-            state = FOUR_FINGERS;
+            touch_state = FOUR_FINGERS;
             break;
     }
     
-    return state;
+    return touch_state;
 }
 
 //@TODO - update the visuals

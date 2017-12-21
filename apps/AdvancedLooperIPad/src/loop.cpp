@@ -10,7 +10,8 @@ Loop::Loop()
 Loop::Loop(vector<float> b, int ip, int bufsize, int nchan)
 {
     //inicializando as variáveis
-    sample = b;
+    sample     = b;
+    lastSample = b;
     bufferSize = bufsize;
     nChannels = nchan;
     debug = false;
@@ -21,12 +22,15 @@ Loop::Loop(vector<float> b, int ip, int bufsize, int nchan)
 Loop::~Loop()
 {
     sample.clear();
+    output_buf.clear();
+    input_buf.clear();
 }
 
 void Loop::setup() {
     vector<float> new_sample;
     
-    sample=new_sample;
+    sample    =new_sample;
+    lastSample=new_sample;
     bufferSize = BUFFER_SIZE;
     nChannels = N_CHANNELS;
     
@@ -54,7 +58,7 @@ void Loop::setup() {
     aux_volume = 1.f;
     
     //variable that stores if the sample is silenced
-    sum_that_checks_if_sample_is_silenced = 1000;
+    sum_that_checks_if_output_is_silenced = 1000;
     
     //sets the feedback
     feedback  = 1.f;
@@ -83,26 +87,30 @@ void Loop::resume()
 
 void Loop::overdub()
 {
-    //if the system will stop overdubing now
-    if (overdubbing)
-        
-        //updates output without interpolation
+    overdubbing = true;
+}
+
+void Loop::stop_overdub()
+{
+    if (overdubbing) {
+        update_last_buffer();
         update_output_buffer();
+    }
     
-    overdubbing = !overdubbing;
+    overdubbing = false;
 }
 
 void Loop::cancel_recording_or_overdubing() {
     if (recording)   recording   = false;
     if (overdubbing) overdubbing = false;
-    
-    //input_buf.
+    input_buf.clear();
+    sample = output_buf;
 }
 
 
 int  Loop::get_size()
 {
-    return sample.size();
+    return output_buf.size();
 }
 
 bool Loop::head_has_restarted()
@@ -113,13 +121,8 @@ bool Loop::head_has_restarted()
         return false;
 }
 
-
 void Loop::update_head_position()
 {
-
-    //checks if the looper needs to be stoped because it is empty (i.e. due to excessive feedback)
-    if (head_has_restarted())
-        resets_sum_checker();
     
     //updating the current position
     outpos = ((outpos + (bufferSize*nChannels))%(end_index));
@@ -282,7 +285,7 @@ void Loop::set_feedback(float newfeedback)
 }
 
 //applies feedback to the original sample at index position
-void Loop::update_feedback_in_subpart_of_the_sample(int index)
+void Loop::update_feedback_in_subpart_of_output_and_sample(int index)
 {
     
     //applies the feeback on the first channel
@@ -305,43 +308,37 @@ void Loop::update_feedback_in_subpart_of_the_sample(int index)
  ***********************************************/
 
 
-//initialize_sum_that_checks_if_sample_is_silenced
-void Loop::initialize_sum_that_checks_if_sample_is_silenced()
+void Loop::initialize_sum_that_checks_if_output_is_silenced()
 {
-    sum_that_checks_if_sample_is_silenced = 0;
+    sum_that_checks_if_output_is_silenced = 0;
 }
 
-//adds_to_sum_that_checks_if_sample_is_silenced
-void Loop::adds_to_sum_that_checks_if_sample_is_silenced(float index)
+void Loop::adds_to_sum_that_checks_if_output_is_silenced(float index)
 {
-    sum_that_checks_if_sample_is_silenced += abs(sample[index]);
+    sum_that_checks_if_output_is_silenced += abs(output_buf[index]);
     
     if (nChannels==2)
-        sum_that_checks_if_sample_is_silenced += abs(sample[index+1]);
+        sum_that_checks_if_output_is_silenced += abs(output_buf[index+1]);
 }
 
-//is_sample_silenced
-bool Loop::is_sample_silenced() {
-    return (sum_that_checks_if_sample_is_silenced < 0.01);
+bool Loop::is_output_silenced() {
+    return (sum_that_checks_if_output_is_silenced < 0.01);
 }
 
-
-//checks_if_sample_is_silenced
-bool Loop::sample_is_silenced_and_screen_has_no_fingers()
+bool Loop::output_is_silenced_and_screen_has_no_fingers()
 {
-    return (is_sample_silenced() && locker_screen_has_no_finger);
+    return (is_output_silenced() && locker_screen_has_no_finger);
 }
 
-//checks_if_sample_is_silenced
+/*
 void Loop::resets_sum_checker()
 {
-    if (sample_is_silenced_and_screen_has_no_fingers())
+    if (output_is_silenced_and_screen_has_no_fingers())
         clear();
     else
-        initialize_sum_that_checks_if_sample_is_silenced();
+        initialize_sum_that_checks_if_output_is_silenced();
 }
-
-
+ */
 
 
 //--------------------------------------------------------------
@@ -371,7 +368,7 @@ void Loop::process_output_buffer_in_a_loop(float* &output)
 {
     for(int i=0; i<bufferSize; i++) {
         
-        //debug only. you can delete me latter
+        //debug only. hopefully, you can try to delete me latter
         if (output_buf.size() == 0) {
             cout << "output_buf is empty" << endl;
             return;
@@ -382,8 +379,8 @@ void Loop::process_output_buffer_in_a_loop(float* &output)
     
     update_head_position();
     
-    if (overdubbing)
-        update_output_buffer();
+    //if (overdubbing)
+    //    update_output_buffer();
 }
 
 
@@ -402,25 +399,36 @@ void Loop::process_output_buffer_at_one_index(float* &output, int i) {
     //computes the current volume
     float current_volume = interpolate_volume(output_buf_index);
     
-    //adds to the sum variables that checks if the sample is silenced
-    adds_to_sum_that_checks_if_sample_is_silenced(output_buf_index);
+    //adds to the sum variables that checks if the output is silenced
+    adds_to_sum_that_checks_if_output_is_silenced(output_buf_index);
     
-    //applies the feedback to the original sample (variable sample), if any
-    update_feedback_in_subpart_of_the_sample(output_buf_index);
+    //applies the feedback to the output and on the sample, if any
+    update_feedback_in_subpart_of_output_and_sample(output_buf_index);
     
-    //feeds the output with the current position
-    output[index  ]      = output_buf[output_buf_index] * 0.5 * current_volume * leftpan;
-        
-    //feeds the output with the current delayed position
-    output[index  ]     += output_buf[delayed_index] * 0.5 *  current_volume * leftpan;
+    //feeds the output with the current position and its delay
+    output[index  ]  = output_buf[output_buf_index] * 0.5 * current_volume * leftpan;
+    output[index  ] += output_buf[delayed_index] * 0.5 *  current_volume * leftpan;
 
+    //in case it's overdub, feed the buffer as well
+    if (overdubbing)
+    {
+        output[index  ] += sample[output_buf_index] * 0.5 *  current_volume * leftpan;
+        output[index  ] += sample[delayed_index] * 0.5 *  current_volume * leftpan;
+    }
     
     //in this case, we are getting the value from the right, and feeding the left channel
     //because we are using only the left channel of the focus right
-    if (nChannels==2) {
+    if (nChannels==2)
+    {
         output[index+1]  = output_buf[output_buf_index] * 0.5 *  current_volume * rightpan;
         output[index+1] += output_buf[delayed_index] * 0.5 *  current_volume * rightpan;
         
+        //in case it's overdub, feed the buffer as well
+        if (overdubbing)
+        {
+            output[index+1] += sample[output_buf_index] * 0.5 *  current_volume * rightpan;
+            output[index+1] += sample[delayed_index] * 0.5 *  current_volume * rightpan;
+        }
     }
     
     //in case there are more channels (eg. x channels), remember to update output[index+x]. so far, this code will only work with n channels.
@@ -434,17 +442,31 @@ void Loop::process_output_buffer_at_one_index(float* &output, int i) {
     float current_aux_volume = interpolate_aux_volume(aux_output_buf_index);
     
     //if there is currentyl an aux looping area
-    if (there_is_aux_looping_area()) {
+    if (there_is_aux_looping_area())
+    {
         
         //same as before
         output[index] += output_buf[aux_output_buf_index] * 0.5 * current_aux_volume * leftpan;
-        
-        //feeds the output with the current delayed position
         output[index] += output_buf[delayed_index] * 0.5 *  current_aux_volume * leftpan;
         
-        if (nChannels==2) {
+        //in case it's overdub, feed the buffer as well
+        if (overdubbing)
+        {
+            output[index  ] += sample[aux_output_buf_index] * 0.5 *  current_aux_volume * leftpan;
+            output[index  ] += sample[delayed_index] * 0.5 *  current_aux_volume * leftpan;
+        }
+        
+        if (nChannels==2)
+        {
             output[index+1] += output_buf[aux_output_buf_index] * 0.5 * current_aux_volume * rightpan;
             output[index+1] += output_buf[delayed_index] * 0.5 *  current_aux_volume * rightpan;
+            
+            //in case it's overdub, feed the buffer as well
+            if (overdubbing)
+            {
+                output[index+1] += sample[aux_output_buf_index] * 0.5 *  current_aux_volume * rightpan;
+                output[index+1] += sample[delayed_index] * 0.5 *  current_aux_volume * rightpan;
+            }
         }
     }
 }
@@ -458,13 +480,19 @@ void Loop::record()
 {
     if (!recording) //se não tá gravando, comece a gravar
     {
-        recording = !recording;
+        recording = true;
         input_buf.clear();
     }
     
-    else       //se tá gravando, finalize
+}
+
+void Loop::stop_record()
+{
+    if (recording)       //se tá gravando, finalize
     {
-        recording = !recording;
+        recording = false;
+        
+        init_last_buffer();
         
         sample=input_buf;
         
@@ -477,7 +505,6 @@ void Loop::record()
         if (debug)
             cout << " loop created! size: " << sample.size() << endl;
     }
-    
 }
 
 
@@ -539,16 +566,13 @@ void Loop::overdub_sample_vector(float* &input)
                 sample[aux_output_buf_index] += input[index+1] * rightpan;
         }
         
-    
-        
-        
     }
 }
 
 
 void Loop::set_head_normalized(float position)
 {
-    int newHead = position*sample.size();
+    int newHead = position*output_buf.size();
     
     set_head_absolute(newHead);
 }
@@ -565,10 +589,23 @@ void Loop::set_head_absolute(int position)
 }
 
 
-//gets the sample and sets it to the output
+//--------------------------------------------------------------
 void Loop::update_output_buffer()
 {
     output_buf = sample;
+}
+
+//--------------------------------------------------------------
+void Loop::update_last_buffer()
+{
+    lastSample = output_buf;
+}
+
+//--------------------------------------------------------------
+void Loop::init_last_buffer()
+{
+    vector<float> empty_buf(input_buf.size(), 0);
+    lastSample = empty_buf;
 }
 
 //////////////////////////////////
@@ -584,7 +621,7 @@ bool Loop::is_recording()
 //////////////////////////////////
 bool Loop::is_empty()
 {
-    return (this->sample.size()==0);
+    return (this->output_buf.size()==0);
 }
 
 
@@ -602,6 +639,16 @@ void Loop::clear()
     outpos = 0;
     volume = 1.f;
     aux_volume = 1.f;
+}
+
+//////////////////////////////////
+// undo/redo last looper
+//////////////////////////////////
+void Loop::undo_redo()
+{
+    sample = lastSample;
+    lastSample = output_buf;
+    update_output_buffer();
 }
 
 void Loop::set_debug(bool debug)
@@ -625,7 +672,7 @@ void Loop::set_aux_volume(float volume)
 //////////////////////////////////
 void Loop::set_full_looping_area()
 {
-    set_looping_area(0, sample.size());
+    set_looping_area(0, output_buf.size());
 }
 
 //////////////////////////////////

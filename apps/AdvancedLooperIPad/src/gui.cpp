@@ -38,6 +38,7 @@ void Gui::draw(Loop* first)
     
     drawBackground(first->is_recording());
     drawFirstLoop(first);
+    drawWhatHasBeenRecordedSoFar(first);
     drawHead(first);
     drawAuxHead(first);
     drawMic();
@@ -81,6 +82,50 @@ void Gui::drawFirstLoop(Loop* first)
     }
 }
 
+//--------------------------------------------------------------
+//draws the first loop
+void Gui::drawWhatHasBeenRecordedSoFar(Loop* first)
+{
+    //checks if there is first. continues to execute if there is
+    if (!first->is_recording())
+        return;
+    
+    ofSetLineWidth(4);
+    
+    //iterates over the screenpixels
+    for (int index = 0; index < ofGetWidth(); index=index+2) {
+        /////////////////////////////
+        //IMPORTANT: This is copied code that should be improved!
+        float middle = getMiddleScreenHeight();
+        
+        int loopsize = 0;
+        if (first->recording)
+            loopsize = first->input_buf.size();
+        if (first->overdubbing)
+            loopsize = first->sample.size();
+        
+        if (loopsize == 0) return;
+        
+        int convWidthToSamples = (int)((index/(float)ofGetWidth()) * loopsize);
+        
+        float mapped_value = 0;
+        if (first->recording)
+            mapped_value  = 4*ofMap(abs(first->input_buf[convWidthToSamples]), -1, 1, -middle, middle);
+        if (first->overdubbing)
+            mapped_value = 4*ofMap(abs(first->sample[convWidthToSamples]), -1, 1, -middle, middle);
+        
+        ofSetColor(30);
+        ofDrawRectangle(index,middle, 2, mapped_value);
+        ofDrawRectangle(index,middle, 2,-mapped_value);
+        ///end of repetition
+        ////////////////////////////
+    }
+    
+}
+
+
+
+
 
 //--------------------------------------------------------------
 void Gui::drawLoopPartAtindex(Loop* first, int index)
@@ -117,13 +162,15 @@ void Gui::drawLoopPartAtindex(Loop* first, int index)
 float  Gui::getValueOfMappedIndex(Loop* first, int index)
 {
     float middle = getMiddleScreenHeight();
-    int loopsize = first->sample.size();
+    //int loopsize = first->sample.size();
+    int loopsize = first->output_buf.size();
     
     //mapping the screen width to the position in the array
     int convWidthToSamples = (int)((index/(float)ofGetWidth()) * loopsize);
     
     //drawing the corresponding rectangle
-    float value = 4*ofMap(abs(first->sample[convWidthToSamples]), -1, 1, -middle, middle);
+    //float value = 4*ofMap(abs(first->sample[convWidthToSamples]), -1, 1, -middle, middle);
+    float value = 4*ofMap(abs(first->output_buf[convWidthToSamples]), -1, 1, -middle, middle);
     
     return value;
 }
@@ -196,7 +243,8 @@ void Gui::drawDelayedLoopPartAtindex(Loop* first, int index)
 float  Gui::getValueOfMappedDelayedIndex(Loop* first, int index)
 {
     float middle = getMiddleScreenHeight();
-    int loopsize = first->sample.size();
+    //int loopsize = first->sample.size();
+    int loopsize = first->output_buf.size();
     
     //mapping the screen width to the position in the array
     int convWidthToSamples = (int)((index/(float)ofGetWidth()) * loopsize);
@@ -204,7 +252,8 @@ float  Gui::getValueOfMappedDelayedIndex(Loop* first, int index)
     int delayedIndex = first->get_delayed_index_from_main_current_index(convWidthToSamples);
     
     //drawing the corresponding rectangle
-    float value = 4*ofMap(abs(first->sample[delayedIndex]), -1, 1, -middle, middle);
+    //float value = 4*ofMap(abs(first->sample[delayedIndex]), -1, 1, -middle, middle);
+    float value = 4*ofMap(abs(first->output_buf[delayedIndex]), -1, 1, -middle, middle);
     
     return value;
 }
@@ -222,7 +271,8 @@ void Gui::drawHead(Loop* first)
         return;
     
     //stores the loop size
-    int loopsize = first->sample.size();
+    //int loopsize = first->sample.size();
+    int loopsize = first->output_buf.size();
     
     //start drawing first waveform
     ofSetColor(100);
@@ -257,7 +307,8 @@ void Gui::drawAuxHead(Loop* first)
         return;
     
     //stores the loop size
-    int loopsize = first->sample.size();
+    //int loopsize = first->sample.size();
+    int loopsize = first->output_buf.size();
     
     //start drawing first waveform
     ofSetColor(100);

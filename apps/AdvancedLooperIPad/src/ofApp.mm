@@ -12,7 +12,7 @@ void ofApp::setup(){
     ofBackground(255);
     
     //setting the default orientation OF_ORIENTATION_90_LEFT
-    ofSetOrientation(OF_ORIENTATION_90_LEFT);
+    ofSetOrientation(OF_ORIENTATION_90_RIGHT);
     
     //init sound
     setup_sound();
@@ -29,7 +29,7 @@ void ofApp::setup(){
     locksFromSpleep();
     
     //seting debug
-    set_debug(true);
+    set_debug(false);
     
     //print debug info
     if (debug)
@@ -77,8 +77,8 @@ void ofApp::draw(){
     if (!finished_setup) return;
     
     ofSetColor(200);
-    string fps("FPS: ");
-    ofDrawBitmapString(fps + ofToString(ofGetFrameRate()), 20, 20);
+    //string fps("FPS: ");
+    //ofDrawBitmapString(fps + ofToString(ofGetFrameRate()), 20, 20);
     
     sm.draw();
     input.draw();
@@ -116,55 +116,23 @@ void ofApp::set_debug(bool debug) {
     ipad_keyboard->setDebug(debug);
 }
 
-bool paused = false;
-
 
 //--------------------------------------------------------------
 void ofApp::updateMIDI() {
     
     if(!midi.thereIsLastMessage()) return;
     
-    //gets what text has the user typed
-    ofxMidiMessage msg = midi.getLastMessage();
-    
-    //feedback
-    if (msg.channel == 1)
-        sm.set_feedback(msg.pitch/127.0);
-    
-    //phasing
-    if (msg.channel == 2)
-        sm.set_delay(msg.pitch/127.0);
-    
-    //one press
-    if (msg.channel == 3) {
-        if (sm.is_loop_empty())
-            sm.record();
-        else
-            sm.overdub();
-    }
-    
-    //two press
-    if (msg.channel == 4) {
-        paused = !paused;
-        sm.cancel_recording_or_overdubing();
-        if (paused)
-            sm.stop();
-        else
-            sm.resume();
-    }
-    
-    //press and hold
-    if (msg.channel == 5)
-        sm.clear_loops();
-    
+    sm.process_MIDI_events(midi.getLastMessage());
+
     midi.clearLastMessage();    
 }
 
 /**********************************************
  * functions defined for the iOS platform
+ * this need to move together with the MIDI messages
  **********************************************/
 
-
+bool paused = false;
 
 void ofApp::updateKeys() {
     
@@ -179,11 +147,18 @@ void ofApp::updateKeys() {
         this->set_debug(!debug);
     
     if (key==' ') {
-        if (sm.is_loop_empty())
+        if (sm.looper_control_state == EMPTY)
             sm.record();
-        else
+        else if (sm.looper_control_state == RECORD)
+            sm.stop_record();
+        else if (sm.looper_control_state == PLAY)
             sm.overdub();
+        else if (sm.looper_control_state == OVERDUB)
+            sm.stop_overdub();
     }
+    
+    if (key=='u')
+        sm.undo_redo();
     
     if (key=='-')
         sm.clear_loops();

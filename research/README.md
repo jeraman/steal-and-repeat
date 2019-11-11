@@ -238,14 +238,3 @@ For Audio IO, I used the [Scarlett FocusRite 2i2](https://us.focusrite.com/usb-a
 For powering, I used a [small battery](https://www.amazon.com/JETech-2-Output-Portable-External-Battery/dp/B00T415OTS) to keep the whole setup portable. Also, it is possible to connect the iPad directly to a reliable source power the [USB-lightning adaptor](https://www.apple.com/ca/shop/product/mk0w2am/a/lightning-to-usb-3-camera-adapter). 
 
 Hopefully, that's it! ;)
-
-# Examples
-Some examples of the Steal & Repeat in action:
-
-[![example](./images/phasing-steve-reich.png)](https://www.youtube.com/embed/eemB6r9CdUg)
-
-[![example](./images/revolta.png)](https://www.youtube.com/embed/piKK5xgzKMg)
-
-[![example](./images/justica-total.png)](https://www.youtube.com/embed/81gj6z6FFTI)
-
-[![example](./images/we-are-the-robots.png)](https://www.youtube.com/embed/AHuMteYx6I0)

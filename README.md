@@ -17,3 +17,14 @@ If you're interested, I also wrote a few words about the making of this project 
 - [C++/Openframeworks](https://openframeworks.cc/) v0.9.0;
 - [Arduino](http://arduino.cc/) & basic electronics;
 - Laser cutting;
+
+## Examples
+Some examples of the Steal & Repeat in action:
+
+[![example](./research/images/phasing-steve-reich.png)](https://www.youtube.com/embed/eemB6r9CdUg)
+
+[![example](./research/images/revolta.png)](https://www.youtube.com/embed/piKK5xgzKMg)
+
+[![example](./research/images/justica-total.png)](https://www.youtube.com/embed/81gj6z6FFTI)
+
+[![example](./research/images/we-are-the-robots.png)](https://www.youtube.com/embed/AHuMteYx6I0)

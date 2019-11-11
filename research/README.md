@@ -3,8 +3,7 @@ I wrote a few words about the:
 1. [iOS app:](#software) Presenting the C++ written app which drives the Steal & Repeat;
 2. [Enclosuring:](#Enclosuring) Presenting the research that led to the plexiglass enclosure;
 3. [Circuits:](#circuits) This section describes how to build a DIY controller that communicates with the iOS app;
-4. [Audio IO & Powering:](#Audio-IO-&-Powering) Covering my approach to deal with audio input & output in the iPad and powering the whole system;
-5. [Examples:](#examples) Presenting some videos of the Steal & Repeat in action.
+4. [Audio IO & Powering:](#Audio-IO-&-Powering) Covering my approach to deal with audio input & output in the iPad and powering the whole system.
 
 # iOS App
 The iOS app was written in C++/Openframeworks (v0.9.0) and is presented in the video below:

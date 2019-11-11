@@ -242,10 +242,10 @@ Hopefully, that's it! ;)
 # Examples
 Some examples of the Steal & Repeat in action:
 
-![example](./images/phasing-steve-reich.png)
+[![example](./images/phasing-steve-reich.png)](https://www.youtube.com/embed/eemB6r9CdUg)
 
-![example](./images/revolta.png)
+[![example](./images/revolta.png)](https://www.youtube.com/embed/piKK5xgzKMg)
 
-![example](./images/justica-total.png)
+[![example](./images/justica-total.png)](https://www.youtube.com/embed/81gj6z6FFTI)
 
-![example](./images/we-are-the-robots.png)
+[![example](./images/we-are-the-robots.png)](https://www.youtube.com/embed/AHuMteYx6I0)

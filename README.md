@@ -5,7 +5,15 @@ The Steal & Repeat Machine is a live looping tool based on direct manipulation o
 
 [![screenshot](screenshot.png "Screenshot")](https://www.youtube.com/embed/9_LMArJO8rY)
 
+![image](./plexiglass-open.jpg)
+
+![image](./power-and-audio.jpg)
+
+![image](./montage.jpg)
+
 If you're interested, I also wrote a few words about the making of this project [here](./research/README.md).
 
 ## Technology used
 - [C++/Openframeworks](https://openframeworks.cc/) v0.9.0;
+- [Arduino](http://arduino.cc/) & basic electronics;
+- Laser cutting;
